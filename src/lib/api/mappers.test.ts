@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mapApiAgent } from "./agents";
-import { mapApiProject } from "./projects";
+import { mapApiProject, slugify } from "./projects";
+import { mapApiProjectInfo } from "./platform";
 
 describe("mapApiAgent", () => {
   it("converte um agente ativo em view 'Publicado' com tom por índice", () => {
@@ -65,5 +66,33 @@ describe("mapApiProject", () => {
     expect(view.workspace).toBe("—");
     expect(view.description).toBe("");
     expect(view.status).toBe("");
+  });
+});
+
+describe("slugify", () => {
+  it("normaliza acentos, espaços e maiúsculas para o padrão do backend", () => {
+    expect(slugify("Recepção 24h")).toBe("recepcao-24h");
+    expect(slugify("  Léo — SDR Virtual  ")).toBe("leo-sdr-virtual");
+  });
+
+  it("garante o mínimo de 2 caracteres exigido pelo backend", () => {
+    expect(slugify("A")).toMatch(/^projeto-/);
+    expect(slugify("!!").length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("mapApiProjectInfo", () => {
+  it("prefere o nome do projeto e coage ids para string", () => {
+    expect(
+      mapApiProjectInfo({ org_id: 7, project_id: 9, name: "Sofia", org_name: "Vitalmed" }),
+    ).toEqual({ orgId: "7", projectId: "9", name: "Sofia" });
+  });
+
+  it("variante org-only: sem project_id, nome vem de org_name", () => {
+    expect(mapApiProjectInfo({ org_id: "org_1", org_name: "Vitalmed" })).toEqual({
+      orgId: "org_1",
+      projectId: undefined,
+      name: "Vitalmed",
+    });
   });
 });

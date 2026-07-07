@@ -3,6 +3,7 @@ import { Topbar } from "@/components/topbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AuthGuard } from "@/components/auth-guard";
 import { CommandMenu } from "@/components/command-menu";
+import { ProjectProvider } from "@/lib/project-context";
 
 export default function AppLayout({
   children,
@@ -10,6 +11,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
+    <ProjectProvider>
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -26,5 +28,6 @@ export default function AppLayout({
       </SidebarInset>
       <CommandMenu />
     </SidebarProvider>
+    </ProjectProvider>
   );
 }

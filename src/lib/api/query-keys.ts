@@ -17,4 +17,34 @@ export const queryKeys = {
     /** Lista de agentes de um projeto específico (ou "mock" no modo demo). */
     list: (projectId: string) => ["agents", projectId] as const,
   },
+  platform: {
+    /** GET /project/info — org_id + projeto autenticado (fonte do X-Org-Id). */
+    info: () => ["platform", "info"] as const,
+  },
+  workspaces: {
+    all: () => ["workspaces"] as const,
+  },
+  channels: {
+    all: () => ["channels"] as const,
+    list: (projectId: string) => ["channels", projectId] as const,
+  },
+  apiKeys: {
+    all: () => ["api-keys"] as const,
+  },
+  conversations: {
+    all: () => ["conversations"] as const,
+    list: (limit: number, offset: number) =>
+      ["conversations", limit, offset] as const,
+  },
+  chat: {
+    history: (sessionId: string) => ["chat", "history", sessionId] as const,
+  },
+  billing: {
+    plans: () => ["billing", "plans"] as const,
+    balance: (orgId: string) => ["billing", "balance", orgId] as const,
+  },
+  studio: {
+    rules: (projectId: string) => ["studio", "rules", projectId] as const,
+    allRules: () => ["studio", "rules"] as const,
+  },
 } as const;

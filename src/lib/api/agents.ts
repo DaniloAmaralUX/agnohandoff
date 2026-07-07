@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { api } from "./client";
 import { USE_MOCK } from "@/lib/config";
 import { agents as mockAgents } from "@/lib/data";
-import { useProjects } from "./projects";
+import { useActiveProject } from "@/lib/project-context";
 import { queryKeys } from "./query-keys";
 import { agentsResponseSchema, type ApiAgent } from "./schemas";
 import { ApiError } from "./errors";
@@ -51,12 +51,10 @@ function fromMock(): AgentView[] {
 }
 
 /* Padrão ANINHADO: agentes pertencem a um projeto.
-   Busca os projetos, pega o primeiro, e então seus agentes (dependent query).
-   REFERÊNCIA: usa projects[0]. Ao produtizar, parametrize pelo projeto
-   selecionado (seletor na topbar) e propague o project_id — ver HANDOFF §2. */
+   O projeto vem do seletor na topbar (useActiveProject) — fallback no
+   primeiro da lista quando nada foi selecionado (mesma semântica de antes). */
 export function useAgents() {
-  const { data: projects } = useProjects();
-  const projectId = projects?.[0]?.id; // TODO(produtização): projeto selecionado, não o primeiro
+  const { projectId } = useActiveProject();
 
   return useQuery({
     queryKey: queryKeys.agents.list(projectId ?? "mock"),
@@ -82,13 +80,25 @@ export function useAgents() {
 }
 
 /* REFERÊNCIA — mutação OTIMISTA: publica/despublica o agente.
-   Atualiza a UI na hora (onMutate), reverte em erro (onError), toast. */
+   Atualiza a UI na hora (onMutate), reverte em erro (onError), toast.
+   Em modo API: PATCH is_active no agente do projeto ativo. */
 export function useToggleAgent() {
   const qc = useQueryClient();
+  const { projectId } = useActiveProject();
   return useMutation({
-    mutationFn: async ({ publish }: { id: string; publish: boolean }) => {
-      // Em modo API: PATCH no agente aqui. Em mock: simula latência.
-      await new Promise((r) => setTimeout(r, 450));
+    mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
+      if (USE_MOCK) {
+        await new Promise((r) => setTimeout(r, 450));
+        return publish;
+      }
+      const { error } = await api.PATCH(
+        "/api/v1/manage/projects/{project_id}/agents/{agent_id}",
+        {
+          params: { path: { project_id: projectId as string, agent_id: id } },
+          body: { is_active: publish },
+        },
+      );
+      if (error) throw new ApiError(0, "Falha ao atualizar o agente.", error);
       return publish;
     },
     onMutate: async ({ id, publish }) => {

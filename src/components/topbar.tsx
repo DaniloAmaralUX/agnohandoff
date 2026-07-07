@@ -12,6 +12,8 @@ import {
   LifeBuoy,
   ShieldCheck,
   LogOut,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -35,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ROUTE_LABELS } from "@/components/app-sidebar";
 import { clearApiKey } from "@/lib/auth";
+import { useActiveProject } from "@/lib/project-context";
 
 /* Deriva "Fer-ra-men-tas" a partir do slug — fallback antes de repetir "AgnoHub". */
 function humanize(seg: string) {
@@ -72,6 +75,7 @@ export function Topbar() {
         <span className="flex size-4 items-center justify-center rounded bg-heat text-[10px] font-bold leading-none text-heat-foreground">A</span>
         <span className="text-muted-foreground">AgnoHub</span>
         <span className="text-border">/</span>
+        <ProjectCrumb />
         {detail ? (
           <>
             <span className="text-muted-foreground">{label}</span>
@@ -124,6 +128,50 @@ export function Topbar() {
         <AccountMenu onSignOut={() => { clearApiKey(); router.push("/login"); }} />
       </div>
     </header>
+  );
+}
+
+/* Seletor do projeto ativo no breadcrumb (HANDOFF §2: os hooks aninhados —
+   agentes, canais, regras — leem daqui, não mais de projects[0]).
+   Padrão Vercel: o projeto é um nó clicável do caminho. */
+function ProjectCrumb() {
+  const { project, projects, setProjectId } = useActiveProject();
+  if (!project) return null;
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Trocar projeto"
+            className="flex h-8 items-center gap-1 rounded-md px-1.5 text-sm text-muted-foreground outline-none transition-colors duration-150 hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 data-[state=open]:bg-accent data-[state=open]:text-foreground"
+          >
+            {project.name}
+            <ChevronsUpDown className="size-3.5 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" sideOffset={6} className="w-56 rounded-lg">
+          <DropdownMenuLabel className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            Projetos
+          </DropdownMenuLabel>
+          {projects.map((p) => (
+            <DropdownMenuItem
+              key={p.id}
+              className="gap-2"
+              onClick={() => setProjectId(p.id)}
+            >
+              <span className={p.id === project.id ? "font-medium" : undefined}>
+                {p.name}
+              </span>
+              {p.id === project.id && (
+                <Check className="ml-auto size-4 text-heat-text" />
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <span className="text-border">/</span>
+    </>
   );
 }
 

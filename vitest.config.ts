@@ -11,15 +11,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       // Mede só o que os testes de unidade cobrem (data layer + design system),
-      // não as páginas/UI (cobertas por e2e).
-      include: [
-        "src/lib/api/agents.ts",
-        "src/lib/api/projects.ts",
-        "src/lib/api/client.ts",
-        "src/lib/api/schemas.ts",
-        "src/lib/api/query-keys.ts",
-        "src/lib/api/errors.ts",
-        "src/lib/constants.ts",
+      // não as páginas/UI (cobertas por e2e). Glob: todo hook novo em api/**
+      // entra no gate de 85% automaticamente.
+      include: ["src/lib/api/**/*.ts", "src/lib/constants.ts"],
+      exclude: [
+        "src/lib/api/**/*.test.*",
+        "src/lib/api/schema.ts", // gerado do OpenAPI (types-only)
       ],
       thresholds: {
         lines: 70,
