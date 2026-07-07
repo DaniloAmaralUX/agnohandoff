@@ -24,27 +24,39 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  conversations as seedConversations,
   playgroundThread,
   type Conversation,
   type ChatMessage,
 } from "@/lib/data";
+import { USE_MOCK } from "@/lib/config";
+import { useConversations } from "@/lib/api/conversations";
+import { useChatHistory } from "@/lib/api/chat";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn, initials } from "@/lib/utils";
 import { statusDot } from "@/lib/constants";
 import { EmptyState } from "@/components/bits";
+import { TriangleAlert } from "lucide-react";
 
-const channelIcon: Record<Conversation["channel"], typeof MessageCircle> = {
+const channelIcon: Record<string, typeof MessageCircle> = {
   WhatsApp: MessageCircle,
   "Web Widget": Globe,
   Telegram: Send,
   Instagram: Camera,
+  API: Globe,
 };
 
 type Filtro = "todas" | "ativas" | "resolvidas";
 
 export default function ConversationsPage() {
-  const [items, setItems] = useState<Conversation[]>(seedConversations);
-  const [selectedId, setSelectedId] = useState(seedConversations[0].id);
+  const { data, isLoading, isError, refetch } = useConversations();
+  // Status alterado localmente (Assumir/Resolver): o backend ainda não expõe
+  // PATCH de conversa — a ação é honesta na sessão e o gap está no HANDOFF.
+  const [statusLocal, setStatusLocal] = useState<Record<string, Conversation["status"]>>({});
+  const items = (data ?? []).map((c) => ({
+    ...c,
+    status: statusLocal[c.id] ?? c.status,
+  }));
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<Filtro>("todas");
   // Conversas assumidas por um humano — habilitam o composer para responder.
@@ -86,19 +98,21 @@ export default function ConversationsPage() {
   });
 
   const selected = items.find((c) => c.id === selectedId) ?? items[0];
-  const ChannelIcon = channelIcon[selected.channel];
-  const assumida = assumidas.has(selected.id);
-  const resolvida = selected.status === "Resolvido";
+  const ChannelIcon = (selected && channelIcon[selected.channel]) ?? Globe;
+  const assumida = selected ? assumidas.has(selected.id) : false;
+  const resolvida = selected?.status === "Resolvido";
 
-  // Muda o status da conversa selecionada no estado local.
-  const setStatus = (status: Conversation["status"]) =>
-    setItems((prev) =>
-      prev.map((c) => (c.id === selected.id ? { ...c, status } : c))
-    );
+  // Histórico real da sessão (modo API); na demo o thread é a transcrição-exemplo.
+  const { data: historyData } = useChatHistory(selected?.sessionId);
+
+  // Muda o status da conversa selecionada no estado local (sem PATCH no backend).
+  const setStatus = (status: Conversation["status"]) => {
+    if (selected) setStatusLocal((prev) => ({ ...prev, [selected.id]: status }));
+  };
 
   const assumir = () => {
     setStatus("Ativo");
-    setAssumidas((prev) => new Set(prev).add(selected.id));
+    if (selected) setAssumidas((prev) => new Set(prev).add(selected.id));
     toast.success("Você assumiu a conversa.", {
       description: "O agente foi pausado — agora você responde.",
     });
@@ -111,7 +125,7 @@ export default function ConversationsPage() {
 
   const enviar = () => {
     const texto = rascunho.trim();
-    if (!texto) return;
+    if (!texto || !selected) return;
     const now = new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
@@ -126,10 +140,12 @@ export default function ConversationsPage() {
     setRascunho("");
   };
 
-  // Thread exibido = transcrição de exemplo + respostas manuais desta conversa.
+  // Thread exibido = histórico real da sessão (modo API) ou a transcrição de
+  // exemplo (demo), mais as respostas manuais desta conversa.
+  const baseThread: ChatMessage[] = USE_MOCK ? playgroundThread : historyData ?? [];
   const thread: ChatMessage[] = [
-    ...playgroundThread,
-    ...(respostas[selected.id] ?? []),
+    ...baseThread,
+    ...(selected ? respostas[selected.id] ?? [] : []),
   ];
 
   // Rola até o fim ao selecionar conversa ou receber/enviar mensagem — respeita
@@ -149,6 +165,18 @@ export default function ConversationsPage() {
         title="Conversas"
         subtitle="Caixa de entrada unificada de todos os canais da Vitalmed."
       />
+
+      {isError && (
+        <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-crimson/30 bg-crimson/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-[13px] text-foreground">
+            <TriangleAlert className="size-4 text-crimson" />
+            Não foi possível carregar as conversas da API.
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Tentar de novo
+          </Button>
+        </div>
+      )}
 
       {/*
         Master-detail responsivo:
@@ -186,7 +214,19 @@ export default function ConversationsPage() {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
-            {filtradas.length === 0 ? (
+            {isLoading ? (
+              <div className="space-y-3 p-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={`sk-${i}`} className="flex items-start gap-3">
+                    <Skeleton className="size-8 shrink-0 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-3.5 w-32" />
+                      <Skeleton className="mt-2 h-3 w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtradas.length === 0 ? (
               <EmptyState
                 icon={Inbox}
                 title="Nenhuma conversa encontrada"
@@ -291,6 +331,15 @@ export default function ConversationsPage() {
             mobileView === "list" && "hidden lg:flex",
           )}
         >
+          {!selected ? (
+            <EmptyState
+              icon={Inbox}
+              title="Nenhuma conversa selecionada"
+              description="Quando houver conversas, a transcrição aparece aqui."
+              className="m-auto min-h-0 border-0 bg-transparent"
+            />
+          ) : (
+          <>
           {/* Header da conversa */}
           <div className="flex items-center justify-between gap-3 border-b border-border p-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -480,6 +529,8 @@ export default function ConversationsPage() {
               )}
             </div>
           </div>
+          </>
+          )}
         </Card>
       </div>
     </PageShell>
