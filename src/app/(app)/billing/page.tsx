@@ -297,17 +297,21 @@ export default function BillingPage() {
                   p.current ? "border-heat" : "border-border"
                 }`}
               >
-                {p.current && (
-                  <Badge className="absolute -top-2.5 left-4 heat-tint border-transparent text-[10px] font-medium">
-                    Plano atual
-                  </Badge>
-                )}
                 <CardHeader className="gap-1">
                   <CardTitle className="flex items-center gap-1.5 text-base">
                     {p.name}
                     {p.id === "pro" && <Sparkles className="size-3.5 text-heat" />}
                     {p.id === "scale" && (
                       <Building2 className="size-3.5 text-muted-foreground" />
+                    )}
+                    {p.current && (
+                      /* Badge inline: consistente com o padrão "Atual" de settings, evita corte por overflow-hidden do Card. */
+                      <Badge
+                        variant="outline"
+                        className="ml-1 gap-1 border-heat/30 text-[11px] font-normal text-heat-text"
+                      >
+                        Atual
+                      </Badge>
                     )}
                   </CardTitle>
                   <div className="flex items-baseline gap-1">
@@ -360,15 +364,19 @@ export default function BillingPage() {
                   pk.recommended ? "border-heat" : "border-border"
                 }`}
               >
-                {pk.recommended && (
-                  <Badge className="absolute -top-2.5 left-4 heat-tint border-transparent text-[10px] font-medium">
-                    Recomendado
-                  </Badge>
-                )}
                 <CardHeader className="gap-1">
                   <CardTitle className="flex items-center gap-1.5 font-mono text-base tabular">
                     <Coins className="size-4 text-muted-foreground" />
                     {pk.tokens}
+                    {pk.recommended && (
+                      /* Badge inline consistente com "Atual"; evita corte por overflow-hidden. */
+                      <Badge
+                        variant="outline"
+                        className="ml-1 gap-1 border-heat/30 text-[11px] font-normal text-heat-text"
+                      >
+                        Recomendado
+                      </Badge>
+                    )}
                   </CardTitle>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-semibold tracking-tight tabular">

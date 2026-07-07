@@ -56,7 +56,10 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-const nav: {
+/* Nav agrupada — FONTE ÚNICA da label de cada rota, usada tanto pela sidebar
+   quanto pelo breadcrumb do topbar (evita o bug "AgnoHub / AgnoHub" que a
+   auditoria pegou em Deploy, MCP, Memória, Studio, Projetos e Super Admin). */
+export const nav: {
   label: string;
   items: { title: string; href: string; icon: React.ElementType; badge?: string }[];
 }[] = [
@@ -97,6 +100,15 @@ const nav: {
     ],
   },
 ];
+
+/* Mapa segmento → título derivado da nav; + rotas fora do (app) que precisam
+   de breadcrumb (super-admin). Consumido pelo Topbar. */
+export const ROUTE_LABELS: Record<string, string> = {
+  ...Object.fromEntries(
+    nav.flatMap((g) => g.items.map((i) => [i.href.replace(/^\//, ""), i.title])),
+  ),
+  "super-admin": "Super Admin",
+};
 
 export function AppSidebar() {
   const pathname = usePathname();

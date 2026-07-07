@@ -84,7 +84,8 @@ export default function MemoryPage() {
   const selectedStrategy =
     memoryStrategies.find((s) => s.key === strategyKey) ?? memoryStrategies[0];
 
-  const saveContext = () => toast.success("Contexto salvo.");
+  const saveContext = () =>
+    toast.success("Configurações de memória salvas.");
 
   return (
     <PageShell>
@@ -123,7 +124,8 @@ export default function MemoryPage() {
       </div>
 
       {/* ── Estratégia + Contexto ────────────────────────────────── */}
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+      {/* items-start: card Estratégia não se estica até a altura do Contexto. */}
+      <div className="mt-3 grid items-start gap-3 lg:grid-cols-2">
         {/* Estratégia de memória */}
         <Card>
           <CardHeader>
@@ -162,7 +164,7 @@ export default function MemoryPage() {
                   <div className="min-w-0 flex-1">
                     <p
                       className={`text-[13px] font-medium ${
-                        selected ? "text-heat" : "text-foreground"
+                        selected ? "text-heat-text" : "text-foreground"
                       }`}
                     >
                       {strategy.name}
@@ -279,15 +281,9 @@ export default function MemoryPage() {
             </FieldGroup>
           </CardContent>
 
-          <div className="flex items-center justify-between border-t border-border px-6 py-4">
+          {/* CTA único no header salva a página inteira; rodapé mantém apenas o escopo. */}
+          <div className="flex items-center border-t border-border px-6 py-4">
             <MonoLabel>por projeto · Sofia</MonoLabel>
-            <Button
-              size="sm"
-              className="bg-heat text-heat-foreground hover:bg-heat-hover"
-              onClick={saveContext}
-            >
-              Salvar contexto
-            </Button>
           </div>
         </Card>
       </div>

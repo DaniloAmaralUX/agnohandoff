@@ -49,14 +49,13 @@ import { FormSheet } from "@/components/form-sheet";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+// Fonte única de statusDot — evita divergência de cor por tela (achado consistency).
+import { statusDot } from "@/lib/constants";
+import { ToneAvatar } from "@/components/bits";
 
-// Consumo de tokens do plano Pro — dado local no tom Vitalmed (mock de apresentação).
-const tokenUsage = {
-  total: 2_000_000,
-  used: 152_000,
-  remaining: 1_848_000,
-  percent: 7.6,
-};
+// Consumo de tokens — fonte única do plano (src/lib/plan-data.ts) para
+// billing/settings/workspaces convergirem numa narrativa só.
+import { planUsage as tokenUsage } from "@/lib/plan-data";
 
 const fmt = (n: number) => n.toLocaleString("pt-BR");
 
@@ -66,10 +65,18 @@ const newWorkspaceSchema = z.object({
 });
 type NewWorkspaceForm = z.infer<typeof newWorkspaceSchema>;
 
-function projectStatusDot(status: string) {
-  if (status === "Ativo") return "text-forest-text";
-  if (status === "Pausado") return "text-honey-text";
-  return "text-muted-foreground"; // Rascunho
+/* Pluralização pt-BR — corrige "1 projetos / 1 membros" (achado consistency). */
+function plural(n: number, singular: string, plural = `${singular}s`) {
+  return n === 1 ? singular : plural;
+}
+
+/* Hash estável (djb2) → índice de tom; deriva a cor do id do workspace,
+   não do índice do array (achado consistency: cor por identidade). */
+const WS_TONES = ["heat", "bluetron", "forest", "amethyst", "honey"] as const;
+function toneFor(id: string) {
+  let h = 5381;
+  for (let i = 0; i < id.length; i++) h = ((h << 5) + h + id.charCodeAt(i)) | 0;
+  return WS_TONES[Math.abs(h) % WS_TONES.length];
 }
 
 /* Colunas da tabela de projetos (DataTable — sort/busca/filtro/paginação). */
@@ -134,7 +141,7 @@ const projectColumns: ColumnDef<Project>[] = [
       <div className="text-right">
         <Badge variant="outline" className="gap-1 border-border text-[11px] font-normal">
           <Circle
-            className={`size-2 fill-current ${projectStatusDot(row.original.status)}`}
+            className={`size-2 fill-current ${statusDot(row.original.status)}`}
           />
           {row.original.status}
         </Badge>
@@ -183,7 +190,7 @@ export default function WorkspacesPage() {
     <PageShell>
       <PageHeader
         title="Workspaces"
-        subtitle="Organize projetos, equipes e o consumo da sua clínica em um só lugar."
+        subtitle="Organize projetos, equipes e o consumo da sua organização em um só lugar."
       >
         <FormSheet
           open={open}
@@ -211,7 +218,7 @@ export default function WorkspacesPage() {
             <FieldError errors={[form.formState.errors.name]} />
           </Field>
           <Field>
-            <FieldLabel htmlFor="ws-desc">Descrição</FieldLabel>
+            <FieldLabel htmlFor="ws-desc">Descrição (opcional)</FieldLabel>
             <Textarea
               id="ws-desc"
               rows={3}
@@ -225,7 +232,8 @@ export default function WorkspacesPage() {
 
       <Tabs defaultValue="workspaces" className="mt-6">
         <TabsList>
-          <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
+          {/* "Visão geral" evita repetir o título da página (achado usability). */}
+          <TabsTrigger value="workspaces">Visão geral</TabsTrigger>
           <TabsTrigger value="projetos">Projetos</TabsTrigger>
           <TabsTrigger value="custos">Custos</TabsTrigger>
         </TabsList>
@@ -234,15 +242,16 @@ export default function WorkspacesPage() {
         <TabsContent value="workspaces" className="mt-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((ws, i) => (
-              <Card
-                key={ws.id}
-                className="gap-0 transition-[transform,border-color,box-shadow] duration-150 ease-enter hover:-translate-y-0.5 hover:border-heat/40 hover:shadow-sm"
-              >
+              /* Sem hover-lift: card não é clicável (achado usability — evita
+                 assinatura enganosa de "sou clicável"). */
+              <Card key={ws.id} className="gap-0">
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex size-9 items-center justify-center rounded-md bg-secondary text-[13px] font-semibold text-secondary-foreground">
+                    {/* ToneAvatar unificando linguagem com /projects, tom por hash
+                        do id — identidade, não índice (achado consistency). */}
+                    <ToneAvatar tone={toneFor(ws.id)} className="size-9 text-[13px]">
                       {ws.name.slice(0, 2).toUpperCase()}
-                    </div>
+                    </ToneAvatar>
                     {i === 0 && (
                       <Badge
                         variant="outline"
@@ -264,22 +273,26 @@ export default function WorkspacesPage() {
                       className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
                     >
                       <FolderKanban className="size-3" />
-                      <span className="tabular">{ws.projects}</span> projetos
+                      <span className="tabular">{ws.projects}</span>{" "}
+                      {plural(ws.projects, "projeto")}
                     </Badge>
                     <Badge
                       variant="outline"
                       className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
                     >
                       <Users className="size-3" />
-                      <span className="tabular">{ws.members}</span> membros
+                      <span className="tabular">{ws.members}</span>{" "}
+                      {plural(ws.members, "membro")}
                     </Badge>
                   </div>
+                  {/* "Abrir" rebaixado a outline: fill Heat fica reservado ao
+                      único CTA de página (achado hierarchy). */}
                   <div className="mt-4 flex items-center gap-2">
-                    <Button size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1">
                       Abrir
                       <ArrowUpRight data-icon="inline-end" />
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground">
                       Configurar
                     </Button>
                   </div>

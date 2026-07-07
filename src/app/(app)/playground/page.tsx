@@ -151,7 +151,7 @@ export default function PlaygroundPage() {
                           {msg.text}
                         </div>
                         {msg.time && (
-                          <p className="pr-1 text-right font-mono text-[10px] text-muted-foreground">
+                          <p className="pr-1 text-right font-mono text-[11px] text-muted-foreground">
                             {msg.time}
                           </p>
                         )}
@@ -166,7 +166,9 @@ export default function PlaygroundPage() {
                       </Avatar>
                       <div className="max-w-[78%] space-y-1.5">
                         {msg.tool && (
-                          <span className="heat-tint inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium">
+                          /* text-heat-text é o token laranja calibrado para
+                             texto pequeno (AA >=4.5:1); heat vivo falha aqui. */
+                          <span className="heat-tint inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] font-medium text-heat-text">
                             <Wrench className="size-3" />
                             {msg.tool}
                           </span>
@@ -175,7 +177,7 @@ export default function PlaygroundPage() {
                           {msg.text}
                         </div>
                         {msg.time && (
-                          <p className="pl-1 font-mono text-[10px] text-muted-foreground">
+                          <p className="pl-1 font-mono text-[11px] text-muted-foreground">
                             {msg.time}
                           </p>
                         )}
@@ -282,7 +284,7 @@ export default function PlaygroundPage() {
                       onChange={(e) => setTemperature(Number(e.target.value))}
                       className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-heat"
                     />
-                    <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
+                    <div className="flex justify-between font-mono text-[11px] text-muted-foreground">
                       <span>Preciso</span>
                       <span>Criativo</span>
                     </div>

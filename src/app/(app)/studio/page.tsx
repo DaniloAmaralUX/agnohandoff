@@ -77,9 +77,10 @@ export default function StudioPage() {
         title="Studio"
         subtitle="Configure regras de payload e voz por linguagem natural."
       >
+        {/* Ghost: fill Heat único da tela fica no rail direito ("Gerar regra"). */}
         <Button
+          variant="outline"
           size="sm"
-          className="bg-heat text-heat-foreground hover:bg-heat-hover"
           onClick={focusPrompt}
         >
           <Plus data-icon="inline-start" />
@@ -99,7 +100,8 @@ export default function StudioPage() {
               variant="outline"
               className="border-border font-normal tabular text-[11px] text-muted-foreground"
             >
-              <span className="tabular">{activeCount}</span>/{rules.length} ativas
+              {/* Um único text-node evita "espaço fantasma" antes da barra. */}
+              {`${activeCount}/${rules.length} ativas`}
             </Badge>
           </CardHeader>
 
@@ -120,7 +122,8 @@ export default function StudioPage() {
                     >
                       {rule.scope}
                     </Badge>
-                    <span className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground/70">
+                    {/* 11px muted pleno: garante legibilidade AA nos dois temas. */}
+                    <span className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
                       {rule.id}
                     </span>
                   </div>

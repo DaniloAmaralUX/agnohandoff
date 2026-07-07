@@ -51,11 +51,12 @@ export default function Landing() {
             </div>
             <span className="text-[15px] font-semibold tracking-tight">AgnoHub</span>
           </div>
+          {/* Itens de nav são inertes na demo — sem hover/underline p/ não prometer interação (achado: hover morto) */}
           <nav className="ml-6 hidden items-center gap-6 text-[13px] text-muted-foreground md:flex">
-            <span className="cursor-default transition-colors hover:text-foreground">Produto</span>
-            <span className="cursor-default transition-colors hover:text-foreground">Canais</span>
-            <span className="cursor-default transition-colors hover:text-foreground">Preços</span>
-            <span className="cursor-default transition-colors hover:text-foreground">Docs</span>
+            <span>Produto</span>
+            <span>Canais</span>
+            <span>Preços</span>
+            <span>Docs</span>
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <Button
@@ -72,13 +73,10 @@ export default function Landing() {
               size="sm"
               className="hidden text-muted-foreground sm:inline-flex"
             >
-              <Link href="/dashboard">Entrar</Link>
+              <Link href="/login">Entrar</Link>
             </Button>
-            <Button
-              asChild
-              size="sm"
-              className="bg-heat text-heat-foreground hover:bg-heat-hover"
-            >
+            {/* CTA usa --primary (heat-600) para contraste AA do branco (achado: CTA laranja vivo reprova AA) */}
+            <Button asChild size="sm">
               <Link href="/dashboard">
                 Ver demo
                 <ArrowRight data-icon="inline-end" />
@@ -96,28 +94,28 @@ export default function Landing() {
             <span className="size-1.5 rounded-full bg-heat" />
             Plataforma de agentes de IA
           </div>
-          <h1 className="mx-auto mt-6 max-w-3xl text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+          {/* Piso do clamp reduzido p/ mobile aproximar mockup da 1ª dobra (achado: 1ª dobra 100% texto no mobile) */}
+          <h1 className="mx-auto mt-6 max-w-3xl text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
             Agentes de IA que{" "}
             <span className="text-heat-text">lembram</span>, atendem e{" "}
             <span className="text-heat-text">resolvem</span>.
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
             Construa, publique e opere agentes conversacionais com memória
             persistente. Omnichannel, com suas ferramentas, prontos para produção.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button
-              asChild
-              size="lg"
-              className="bg-heat text-heat-foreground hover:bg-heat-hover"
-            >
+          {/* CTAs w-full no mobile p/ alinhar larguras (achado: larguras desiguais empilhado);
+              secundário aponta p/ #features p/ os destinos serem distintos (achado: par com mesmo destino);
+              primário usa --primary (AA). */}
+          <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+            <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/dashboard">
                 Ver demo ao vivo
                 <ArrowRight data-icon="inline-end" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/dashboard">Explorar o produto</Link>
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Link href="#features">Explorar o produto</Link>
             </Button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
@@ -140,7 +138,8 @@ export default function Landing() {
                   app.agnohub.ai/dashboard
                 </span>
               </div>
-              <div className="relative h-[420px] overflow-hidden">
+              {/* Fade na base p/ corte não parecer bug de renderização (achado: mockup cortado no meio dos títulos) */}
+              <div className="relative h-[420px] overflow-hidden [mask-image:linear-gradient(black_78%,transparent)]">
                 <iframe
                   src="/dashboard"
                   title="Preview do produto"
@@ -163,7 +162,7 @@ export default function Landing() {
       </section>
 
       {/* ── Features ────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-[1180px] px-5 py-20">
+      <section id="features" className="mx-auto max-w-[1180px] px-5 py-20 scroll-mt-16">
         <div className="max-w-2xl">
           <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
             Por que AgnoHub
@@ -259,8 +258,9 @@ export default function Landing() {
       </section>
 
       {/* ── CTA final ───────────────────────────────────────────── */}
+      {/* No dark, o painel graphite ficava tonalmente igual ao fundo — borda mais forte + sombra p/ elevar (achado: hierarquia perdida no dark) */}
       <section className="mx-auto max-w-[1180px] px-5 py-24">
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center shadow-[0_24px_80px_-24px_rgba(0,0,0,0.35)] dark:border-white/12 dark:shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
           <div className="grid-bg absolute inset-0 opacity-[0.15]" />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-tight tracking-tight text-white">
@@ -270,11 +270,8 @@ export default function Landing() {
               Protótipo navegável — explore todas as telas e fluxos do produto.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="bg-heat text-heat-foreground hover:bg-heat-hover"
-              >
+              {/* Único CTA laranja da tela usa --primary (AA) */}
+              <Button asChild size="lg">
                 <Link href="/dashboard">
                   Entrar no protótipo
                   <ArrowRight data-icon="inline-end" />
@@ -302,9 +299,10 @@ export default function Landing() {
             <Link href="/fluxos" className="transition-colors hover:text-foreground">
               Fluxos de teste
             </Link>
-            <span className="cursor-default transition-colors hover:text-foreground">Privacidade</span>
-            <span className="cursor-default transition-colors hover:text-foreground">Termos</span>
-            <span className="cursor-default transition-colors hover:text-foreground">GitHub</span>
+            {/* Itens inertes sem hover — não prometer clique (achado: hover morto no footer) */}
+            <span>Privacidade</span>
+            <span>Termos</span>
+            <span>GitHub</span>
           </div>
         </div>
       </footer>

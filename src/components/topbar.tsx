@@ -7,25 +7,20 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { ROUTE_LABELS } from "@/components/app-sidebar";
 
-const LABELS: Record<string, string> = {
-  dashboard: "Dashboard",
-  conversations: "Conversas",
-  agents: "Agentes",
-  tools: "Ferramentas",
-  channels: "Canais",
-  playground: "Playground",
-  analytics: "Analytics",
-  workspaces: "Workspaces",
-  integrations: "Integrações",
-  billing: "Faturamento",
-  settings: "Configurações",
-};
+/* Deriva "Fer-ra-men-tas" a partir do slug — fallback antes de repetir "AgnoHub". */
+function humanize(seg: string) {
+  return seg
+    .split("-")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+}
 
 export function Topbar() {
   const pathname = usePathname();
   const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
-  const label = LABELS[seg] ?? "AgnoHub";
+  const label = ROUTE_LABELS[seg] ?? humanize(seg);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4">

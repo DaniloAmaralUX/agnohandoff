@@ -47,6 +47,11 @@ function initials(name: string) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+/* Pluralização pt-BR — corrige "1 agentes / 1 canais" (achado consistency). */
+function plural(n: number, singular: string, plural = `${singular}s`) {
+  return n === 1 ? singular : plural;
+}
+
 export default function ProjectsPage() {
   const { data, isLoading, isError, refetch } = useProjects();
   const createProject = useCreateProject();
@@ -118,7 +123,7 @@ export default function ProjectsPage() {
             <FieldError errors={[form.formState.errors.workspace]} />
           </Field>
           <Field>
-            <FieldLabel htmlFor="pj-desc">Descrição</FieldLabel>
+            <FieldLabel htmlFor="pj-desc">Descrição (opcional)</FieldLabel>
             <Textarea
               id="pj-desc"
               rows={3}
@@ -192,11 +197,13 @@ export default function ProjectsPage() {
                     <div className="flex shrink-0 items-center gap-3 text-[12px] text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
                         <Bot className="size-3.5" />
-                        <span className="tabular">{p.agents}</span> agentes
+                        <span className="tabular">{p.agents}</span>{" "}
+                        {plural(p.agents ?? 0, "agente")}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <Radio className="size-3.5" />
-                        <span className="tabular">{p.channels}</span> canais
+                        <span className="tabular">{p.channels}</span>{" "}
+                        {plural(p.channels ?? 0, "canal", "canais")}
                       </span>
                     </div>
                   )}

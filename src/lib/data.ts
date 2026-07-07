@@ -127,7 +127,8 @@ export const metrics: Metric[] = [
   { label: "Conversas (7d)", value: "1.284", delta: "+12,4%", trend: "up", hint: "vs. semana anterior" },
   { label: "Taxa de resolução", value: "87%", delta: "+3,1%", trend: "up", hint: "sem intervenção humana" },
   { label: "Resposta média", value: "1,8s", delta: "-0,4s", trend: "up", hint: "primeira resposta" },
-  { label: "Tokens (mês)", value: "4,2M", delta: "63% do limite", trend: "down", hint: "plano Pro · 6,7M" },
+  // Alinhado ao plano canônico (src/lib/plan-data.ts): 152K de 2M = 7,6%.
+  { label: "Tokens (mês)", value: "152K", delta: "7,6% do limite", trend: "up", hint: "plano Pro · 2M" },
 ];
 
 // Série de conversas por dia (últimos 14 dias) — para o gráfico.

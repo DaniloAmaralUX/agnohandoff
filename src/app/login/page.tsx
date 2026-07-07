@@ -61,8 +61,9 @@ export default function LoginPage() {
           </p>
 
           {USE_MOCK && (
-            <p className="mt-3 rounded-md bg-muted/60 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-              Modo demo: sem API configurada — qualquer valor não-vazio entra (o back não é chamado).
+            /* Copy simplificado — jargão de dev fora, mono só onde acrescenta (achado: 'o back não é chamado' + mono 11px em texto corrido) */
+            <p className="mt-3 rounded-md bg-muted/60 px-3 py-2 text-[13px] text-muted-foreground">
+              Modo demo — qualquer valor entra. Exemplo: <span className="font-mono text-[12px]">proj_demo</span>.
             </p>
           )}
 
@@ -90,16 +91,18 @@ export default function LoginPage() {
             </FieldGroup>
 
             {error && (
-              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-crimson">
+              /* text-crimson-text não existe; --destructive já adapta por tema e passa AA (achado: crimson vivo em light reprova) */
+              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-destructive">
                 <TriangleAlert className="size-4 shrink-0" />
                 {error}
               </p>
             )}
 
+            {/* Submit usa --primary (heat-600) — AA do branco (achado: fill vivo reprova AA) */}
             <Button
               type="submit"
               disabled={loading}
-              className="mt-5 w-full bg-heat text-heat-foreground hover:bg-heat-hover"
+              className="mt-5 w-full"
             >
               {loading ? (
                 <Loader2 data-icon="inline-start" className="animate-spin" />
@@ -112,7 +115,7 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-[13px] text-muted-foreground">
           Ainda não tem conta?{" "}
-          <Link href="/onboarding" className="font-medium text-heat hover:underline">
+          <Link href="/onboarding" className="font-medium text-heat-text hover:underline">
             Criar organização
           </Link>
         </p>

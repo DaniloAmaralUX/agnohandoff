@@ -98,7 +98,7 @@ export default function SuperAdminPage() {
             <Card key={m.label} className="gap-0 py-4">
               <CardContent className="px-4">
                 <p className="text-[13px] text-muted-foreground">{m.label}</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight tabular">
+                <p className="mt-2 font-mono text-2xl font-semibold tracking-tight tabular">
                   {m.value}
                 </p>
                 <div className="mt-2 flex items-center gap-1.5 text-[12px]">
@@ -166,10 +166,11 @@ export default function SuperAdminPage() {
                         {org.plan}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right tabular text-[13px]">
+                    {/* Células numéricas padronizadas: mono tabular foreground. */}
+                    <TableCell className="text-right font-mono text-[12px] tabular text-foreground">
                       {org.seats}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-[12px] text-muted-foreground">
+                    <TableCell className="text-right font-mono text-[12px] tabular text-foreground">
                       {org.tokens}
                     </TableCell>
                     <TableCell className="text-right">

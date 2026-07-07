@@ -49,7 +49,8 @@ export default function DashboardPage() {
           <FileBarChart data-icon="inline-start" />
           Relatório
         </Button>
-        <Button size="sm" className="bg-heat text-heat-foreground hover:bg-heat-hover">
+        {/* CTA usa --primary p/ AA (achado: fill heat vivo reprova AA) */}
+        <Button size="sm">
           <Plus data-icon="inline-start" />
           Novo agente
         </Button>
@@ -92,18 +93,29 @@ export default function DashboardPage() {
             <CardDescription>Últimos 14 dias</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex h-40 items-end gap-1.5">
-              {conversationSeries.map((v, i) => (
-                <div
-                  key={i}
-                  className="group relative flex-1 rounded-t-sm bg-heat/85 transition-colors hover:bg-heat"
-                  style={{ height: `${(v / maxSeries) * 100}%` }}
-                >
-                  <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-graphite px-1.5 py-0.5 font-mono text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-                    {v}
-                  </span>
-                </div>
-              ))}
+            {/* Barras em tint (bg-heat/30), 'hoje' cheio — acento por escassez (achado: 30 barras laranja diluem o CTA único);
+                referência de escala à esquerda p/ leitura sem hover (achado: sem eixo Y, tooltip falha em touch/dark) */}
+            <div className="relative flex h-40 items-end gap-1.5">
+              <span className="absolute -top-1 left-0 font-mono text-[10px] text-muted-foreground">
+                máx {maxSeries}
+              </span>
+              {conversationSeries.map((v, i) => {
+                const isToday = i === conversationSeries.length - 1;
+                return (
+                  <div
+                    key={i}
+                    className={`group relative flex-1 rounded-t-sm transition-colors ${
+                      isToday ? "bg-heat" : "bg-heat/30 hover:bg-heat/60"
+                    }`}
+                    style={{ height: `${(v / maxSeries) * 100}%` }}
+                  >
+                    {/* Tooltip por tokens — inverte com tema (achado: bg-graphite fixo somia no dark) */}
+                    <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded border border-border bg-popover px-1.5 py-0.5 font-mono text-[10px] text-popover-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                      {v}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
               <span>14 dias atrás</span>
@@ -141,7 +153,8 @@ export default function DashboardPage() {
       {/* ── Agentes + conversas ──────────────────────────────────── */}
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          {/* !flex força layout row (o base do CardHeader é grid — flex-row sozinho não sobrescreve). Achado: 'Ver todos' empilhado. */}
+          <CardHeader className="!flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="size-4 text-muted-foreground" />
               <CardTitle className="text-base">Seus agentes</CardTitle>
@@ -190,7 +203,8 @@ export default function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          {/* !flex força layout row (o base do CardHeader é grid — flex-row sozinho não sobrescreve). Achado: 'Ver todos' empilhado. */}
+          <CardHeader className="!flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <MessagesSquare className="size-4 text-muted-foreground" />
               <CardTitle className="text-base">Conversas recentes</CardTitle>
@@ -222,7 +236,14 @@ export default function DashboardPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="truncate text-sm font-medium">{c.contact}</p>
-                    {c.unread && <span className="size-1.5 rounded-full bg-heat" />}
+                    {c.unread && (
+                      <span
+                        className="flex size-1.5 items-center justify-center rounded-full bg-heat"
+                        role="status"
+                      >
+                        <span className="sr-only">Não lida</span>
+                      </span>
+                    )}
                   </div>
                   <p className="truncate text-[12px] text-muted-foreground">
                     {c.preview}
@@ -232,9 +253,10 @@ export default function DashboardPage() {
                   <span className="whitespace-nowrap text-[11px] text-muted-foreground">
                     {c.time}
                   </span>
+                  {/* Padroniza em 11px (achado: 10 vs 11px em cards gêmeos) */}
                   <Badge
                     variant="outline"
-                    className="gap-1 border-border text-[10px] font-normal"
+                    className="gap-1 border-border text-[11px] font-normal"
                   >
                     <Circle className={`size-2 fill-current ${statusDot(c.status)}`} />
                     {c.status}

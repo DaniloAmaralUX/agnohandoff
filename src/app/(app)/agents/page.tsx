@@ -180,8 +180,10 @@ export default function AgentsPage() {
               <Separator />
 
               <CardFooter className="gap-1 px-2 py-1.5">
+                {/* "Editar" agora aponta para o agente clicado — antes
+                    todos levavam a /agents/sofia (achado usability). */}
                 <Button asChild variant="ghost" size="sm" className="flex-1 text-muted-foreground">
-                  <Link href="/agents/sofia">
+                  <Link href={`/agents/${a.id.slice(4)}`}>
                     <Pencil data-icon="inline-start" />
                     Editar
                   </Link>

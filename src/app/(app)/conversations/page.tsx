@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Search,
   Circle,
@@ -11,6 +11,8 @@ import {
   MessageCircle,
   Globe,
   Camera,
+  ArrowLeft,
+  Inbox,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,6 +31,7 @@ import {
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { statusDot } from "@/lib/constants";
+import { EmptyState } from "@/components/bits";
 
 const channelIcon: Record<Conversation["channel"], typeof MessageCircle> = {
   WhatsApp: MessageCircle,
@@ -57,6 +60,12 @@ export default function ConversationsPage() {
   // Mensagens enviadas manualmente, por conversa (mock: só nesta sessão).
   const [respostas, setRespostas] = useState<Record<string, ChatMessage[]>>({});
   const [rascunho, setRascunho] = useState("");
+  // Master-detail responsivo: em telas <lg mostramos ou a lista ou o thread.
+  // Ao tocar numa conversa no mobile, alternamos para o thread; um botão
+  // "Voltar" leva de volta à lista.
+  const [mobileView, setMobileView] = useState<"list" | "thread">("list");
+  // Auto-scroll: mensagem mais recente deve nascer visível.
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
 
   // Deep-linking: o filtro vive na URL (?filtro=), bookmarkável e compartilhável.
   useEffect(() => {
@@ -131,29 +140,37 @@ export default function ConversationsPage() {
     ...(respostas[selected.id] ?? []),
   ];
 
+  // Rola até o fim ao selecionar conversa ou receber/enviar mensagem — respeita
+  // prefers-reduced-motion (behavior 'auto' evita animação para quem pediu).
+  useEffect(() => {
+    const reduce = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    threadEndRef.current?.scrollIntoView({
+      block: "end",
+      behavior: reduce ? "auto" : "smooth",
+    });
+  }, [selectedId, thread.length]);
+
   return (
     <PageShell>
       <PageHeader
         title="Conversas"
         subtitle="Caixa de entrada unificada de todos os canais da Vitalmed."
-      >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            toast.success("Conversa atribuída a você.", {
-              description: `${selected.contact} agora aparece na sua fila.`,
-            })
-          }
-        >
-          <UserPlus data-icon="inline-start" />
-          Atribuir
-        </Button>
-      </PageHeader>
+      />
 
+      {/*
+        Master-detail responsivo:
+        - lg+: duas colunas visíveis (lista + thread).
+        - <lg: renderiza só uma coluna por vez conforme mobileView.
+      */}
       <div className="mt-6 grid gap-3 lg:grid-cols-[380px_1fr]">
         {/* ── Lista ─────────────────────────────────────────────── */}
-        <Card className="flex h-[calc(100vh-13rem)] flex-col gap-0 overflow-hidden py-0">
+        <Card
+          className={cn(
+            "flex h-[calc(100vh-13rem)] flex-col gap-0 overflow-hidden py-0",
+            mobileView === "thread" && "hidden lg:flex",
+          )}
+        >
           <div className="space-y-3 border-b border-border p-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -178,9 +195,28 @@ export default function ConversationsPage() {
 
           <div className="min-h-0 flex-1 overflow-y-auto">
             {filtradas.length === 0 ? (
-              <p className="px-4 py-8 text-center text-[13px] text-muted-foreground">
-                Nenhuma conversa encontrada.
-              </p>
+              <EmptyState
+                icon={Inbox}
+                title="Nenhuma conversa encontrada"
+                description={
+                  busca.trim()
+                    ? `Nada corresponde a “${busca}”.`
+                    : "Ajuste os filtros para ver mais itens."
+                }
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setBusca("");
+                      changeFiltro("todas");
+                    }}
+                  >
+                    {busca.trim() ? "Limpar busca" : "Ver todas"}
+                  </Button>
+                }
+                className="min-h-0 border-0 bg-transparent px-4 py-8"
+              />
             ) : (
               filtradas.map((c) => {
                 const CIcon = channelIcon[c.channel];
@@ -188,7 +224,11 @@ export default function ConversationsPage() {
                 return (
                   <button
                     key={c.id}
-                    onClick={() => setSelectedId(c.id)}
+                    onClick={() => {
+                      setSelectedId(c.id);
+                      // No mobile, tocar num item revela o thread em tela cheia.
+                      setMobileView("thread");
+                    }}
                     className={cn(
                       "flex w-full items-start gap-3 border-b border-border px-3 py-2.5 text-left transition-colors hover:bg-accent",
                       ativa && "bg-accent"
@@ -205,7 +245,7 @@ export default function ConversationsPage() {
                           {c.contact}
                         </p>
                         <CIcon className="size-3 shrink-0 text-muted-foreground" />
-                        <span className="ml-auto whitespace-nowrap font-mono text-[10px] text-muted-foreground">
+                        <span className="ml-auto whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                           {c.time}
                         </span>
                       </div>
@@ -214,13 +254,18 @@ export default function ConversationsPage() {
                           {c.preview}
                         </p>
                         {c.unread && (
-                          <span className="ml-auto size-1.5 shrink-0 rounded-full bg-heat" />
+                          <span
+                            className="ml-auto flex size-1.5 shrink-0 items-center justify-center rounded-full bg-heat"
+                            role="status"
+                          >
+                            <span className="sr-only">Não lida</span>
+                          </span>
                         )}
                       </div>
                       <div className="mt-1.5">
                         <Badge
                           variant="outline"
-                          className="gap-1 border-border text-[10px] font-normal"
+                          className="gap-1 border-border text-[11px] font-normal"
                         >
                           <Circle
                             className={cn(
@@ -240,10 +285,25 @@ export default function ConversationsPage() {
         </Card>
 
         {/* ── Transcrição ───────────────────────────────────────── */}
-        <Card className="flex h-[calc(100vh-13rem)] flex-col gap-0 overflow-hidden py-0">
+        <Card
+          className={cn(
+            "flex h-[calc(100vh-13rem)] flex-col gap-0 overflow-hidden py-0",
+            mobileView === "list" && "hidden lg:flex",
+          )}
+        >
           {/* Header da conversa */}
           <div className="flex items-center justify-between gap-3 border-b border-border p-3">
             <div className="flex min-w-0 items-center gap-3">
+              {/* Voltar para a lista (só visível em telas <lg). */}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Voltar para a lista"
+                onClick={() => setMobileView("list")}
+                className="-ml-1 size-9 shrink-0 lg:hidden"
+              >
+                <ArrowLeft className="size-4" />
+              </Button>
               <Avatar className="size-9 shrink-0">
                 <AvatarFallback className="bg-secondary text-[12px] font-medium text-secondary-foreground">
                   {initials(selected.contact)}
@@ -253,81 +313,121 @@ export default function ConversationsPage() {
                 <p className="truncate text-sm font-semibold">
                   {selected.contact}
                 </p>
-                <div className="mt-0.5 flex items-center gap-2 text-[12px] text-muted-foreground">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px] text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <ChannelIcon className="size-3" />
                     {selected.channel}
                   </span>
-                  <span className="text-border">·</span>
-                  <span>
+                  <span className="hidden text-border sm:inline">·</span>
+                  {/* Meta do agente é útil mas secundário — esconde no mobile
+                      para que o header não esmague as ações principais. */}
+                  <span className="hidden sm:inline">
                     Agente <span className="font-medium text-foreground">{selected.agent}</span>
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
+              {/* "Atribuir" é ação com escopo de conversa — vive aqui, junto de
+                  Assumir/Resolver, não no header da página (que tem escopo global).
+                  Em telas estreitas fica escondido para dar espaço às ações principais. */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  toast.success("Conversa atribuída a você.", {
+                    description: `${selected.contact} agora aparece na sua fila.`,
+                  })
+                }
+                className="hidden sm:inline-flex"
+              >
+                <UserPlus data-icon="inline-start" />
+                Atribuir
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={assumir}
-                disabled={assumida}
+                disabled={assumida || resolvida}
               >
                 <UserPlus data-icon="inline-start" />
                 {assumida ? "Assumida" : "Assumir"}
               </Button>
-              <Button
-                size="sm"
-                onClick={resolver}
-                disabled={resolvida}
-                className="bg-heat text-heat-foreground hover:bg-heat-hover"
-              >
-                <Check data-icon="inline-start" />
-                {resolvida ? "Resolvida" : "Resolver"}
-              </Button>
+              {resolvida ? (
+                /* Confirmação legível em vez de disabled+opacity: dot forest
+                   + rótulo em foreground. Leitura clara para vidente e AT. */
+                <Badge
+                  variant="outline"
+                  className="gap-1.5 h-8 border-border px-2.5 text-[12px] font-normal text-foreground"
+                >
+                  <Circle className="size-2 fill-current text-forest-text" />
+                  Resolvida
+                </Badge>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={resolver}
+                  className="bg-heat text-heat-foreground hover:bg-heat-hover"
+                >
+                  <Check data-icon="inline-start" />
+                  Resolver
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Corpo — bolhas */}
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             <div className="flex justify-center">
-              <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
                 Hoje
               </span>
             </div>
             {thread.map((m, i) => {
-              const isUser = m.role === "user";
+              // Convenção de inbox de atendimento:
+              //  - contato (user) à ESQUERDA em bolha neutra;
+              //  - lado Vitalmed (agent/operador) à DIREITA em bolha da marca.
+              const isContact = m.role === "user";
               return (
                 <div
                   key={i}
                   className={cn(
                     "flex flex-col gap-1",
-                    isUser ? "items-end" : "items-start"
+                    isContact ? "items-start" : "items-end"
                   )}
                 >
                   {m.tool && (
-                    <span className="inline-flex items-center gap-1 rounded-md heat-tint px-1.5 py-0.5 font-mono text-[10px]">
+                    /* 11px + text-heat-text (heat vivo em texto pequeno não
+                       passa AA; --heat-text é o token dedicado). */
+                    <span className="inline-flex items-center gap-1 rounded-md heat-tint px-1.5 py-0.5 font-mono text-[11px] text-heat-text">
                       <Wrench className="size-2.5" />
                       {m.tool}
                     </span>
                   )}
                   <div
                     className={cn(
+                      // Distinção por LADO, não por massa de cor: contato à
+                      // esquerda (card com borda), Vitalmed à direita (secondary
+                      // neutro). Evita blocos grandes de fill laranja no corpo
+                      // do chat (regressão pega na review; admin = contido).
                       "max-w-[78%] rounded-lg px-3 py-2 text-[13px] leading-relaxed",
-                      isUser
-                        ? "bg-secondary text-secondary-foreground"
-                        : "border border-border bg-card text-foreground"
+                      isContact
+                        ? "border border-border bg-card text-foreground"
+                        : "bg-secondary text-secondary-foreground"
                     )}
                   >
                     {m.text}
                   </div>
                   {m.time && (
-                    <span className="px-1 font-mono text-[10px] text-muted-foreground">
+                    <span className="px-1 font-mono text-[11px] text-muted-foreground">
                       {m.time}
                     </span>
                   )}
                 </div>
               );
             })}
+            {/* Âncora de auto-scroll: nasce visível a última mensagem. */}
+            <div ref={threadEndRef} />
           </div>
 
           {/* Rodapé — composer */}
@@ -355,7 +455,7 @@ export default function ConversationsPage() {
                 size="icon"
                 aria-label="Enviar resposta"
                 disabled={!assumida || rascunho.trim() === ""}
-                className="size-8 bg-heat text-heat-foreground hover:bg-heat-hover"
+                className="size-9 bg-heat text-heat-foreground hover:bg-heat-hover"
               >
                 <Send className="size-4" />
               </Button>

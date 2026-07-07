@@ -49,7 +49,10 @@
   --popover: oklch(0.998 0.002 65);
   --popover-foreground: oklch(0.255 0.008 55);
 
-  --primary: oklch(0.68 0.2 42);
+  /* Primário = heat-600 (mais escuro que --heat vivo), para o BRANCO passar
+     WCAG AA (~5.9:1). O --heat vivo segue disponível como acento visual
+     (dots, ícones, mockups); só o FILL de texto foi escurecido. */
+  --primary: oklch(0.55 0.175 42);
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.964 0.006 65);
@@ -103,7 +106,8 @@
   --popover: oklch(0.25 0.007 55);
   --popover-foreground: oklch(0.95 0.003 70);
 
-  --primary: oklch(0.68 0.2 42);
+  /* Dark também usa heat-600 no fill (branco passa ~6:1). */
+  --primary: oklch(0.55 0.175 42);
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.29 0.006 55);
@@ -390,8 +394,11 @@
 
 /* Utilitários de marca ---------------------------------------------------- */
 
-/* Botão/elemento com o laranja Heat + hover coeso */
-.bg-heat { background-color: var(--heat); }
+/* Fill de CTA/elemento com o laranja Heat + hover coeso.
+   IMPORTANTE: usa --primary (heat-600 escurecido, AA >= 5.9:1 com branco) e
+   NÃO o --heat vivo puro — o vivo falha 3:1 como bg de texto. Para acento
+   visual sem texto (dots, ilustração, mockup), use var(--heat) diretamente. */
+.bg-heat { background-color: var(--primary); }
 .bg-heat:hover { background-color: var(--heat-hover); }
 
 /* Tint sutil de heat p/ realces (badges, seleção) */

@@ -24,11 +24,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Circle } from "lucide-react";
 import { channels as seedChannels, projects, type Channel } from "@/lib/data";
 import { statusDot } from "@/lib/constants";
@@ -77,9 +87,21 @@ type NewChannelForm = z.infer<typeof newChannelSchema>;
 
 export default function ChannelsPage() {
   const [items, setItems] = useState<Channel[]>(seedChannels);
-  const [apiKey, setApiKey] = useState("sk_live_a1b2c3d4e5f6···9f0e");
+  // "fullKey" = a chave real (retornada UMA vez pela API); "maskedKey" = o que
+  // fica exibido depois. Quando o usuário fecha o reveal ou navega, só a
+  // versão mascarada permanece — a íntegra é irrecuperável, como um bom
+  // segredo deve ser (pego pela auditoria: o toast prometia "íntegra" mas a UI
+  // já exibia a chave mascarada).
+  const [fullKey, setFullKey] = useState<string | null>(
+    "pk_demo_DEMO_NOT_A_SECRET_0000000000000000",
+  );
+  const [maskedKey, setMaskedKey] = useState(
+    "pk_demo_DEMO···0000",
+  );
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
+  // Confirmação para regenerar a chave — ação destrutiva (revoga a atual).
+  const [confirmRegen, setConfirmRegen] = useState(false);
 
   const form = useForm<NewChannelForm>({
     resolver: standardSchemaResolver(newChannelSchema),
@@ -111,17 +133,35 @@ export default function ChannelsPage() {
   });
 
   function handleCopy() {
-    navigator.clipboard?.writeText(apiKey).catch(() => {});
+    // Copia a íntegra se ela ainda estiver visível; senão, a mascarada mesmo
+    // (nada útil, mas evita erro silencioso).
+    navigator.clipboard
+      ?.writeText(fullKey ?? maskedKey)
+      .catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   }
 
+  function dismissReveal() {
+    setFullKey(null); // some pra sempre — não é possível re-exibir
+  }
+
   function handleGenerateKey() {
-    const rand = Math.random().toString(36).slice(2, 14);
-    setApiKey(`sk_live_${rand}···${rand.slice(0, 4)}`);
+    // Prefixo "pk_demo" — obviamente-falso p/ não disparar secret-scanning
+    // (formato "sk_live" foi flaggeado no push, mesmo mock).
+    const rand = Math.random().toString(36).slice(2, 34);
+    const full = `pk_demo_${rand}`;
+    setFullKey(full);
+    setMaskedKey(`pk_demo_${rand.slice(0, 4)}···${rand.slice(-4)}`);
     setCopied(false);
     toast.success("Nova chave gerada.", {
-      description: "Copie agora — ela só é exibida na íntegra neste momento.",
+      description: "Copie agora — a íntegra some quando você fechar.",
+      action: {
+        label: "Copiar",
+        onClick: () => {
+          navigator.clipboard?.writeText(full).catch(() => {});
+        },
+      },
     });
   }
 
@@ -220,6 +260,8 @@ export default function ChannelsPage() {
         {items.map((c) => {
           const Icon = typeIcon[c.type];
           const connected = c.status === "Conectado";
+          const disconnected = c.status === "Desconectado";
+          const pending = c.status === "Pendente";
           return (
             <Card key={c.id} className="gap-0 py-0">
               <CardContent className="flex flex-col gap-4 p-4">
@@ -236,7 +278,7 @@ export default function ChannelsPage() {
                       </p>
                       <Badge
                         variant="outline"
-                        className="gap-1 border-border text-[10px] font-normal"
+                        className="gap-1 border-border text-[11px] font-normal"
                       >
                         <Circle className={`size-2 fill-current ${statusDot(c.status)}`} />
                         {c.status}
@@ -252,6 +294,39 @@ export default function ChannelsPage() {
                 </div>
 
                 <div className="flex items-center gap-2 border-t border-border pt-3">
+                  {/* Estado de erro precisa nomear a saída — não basta
+                      "Configurar" genérico. Reconectar (Desconectado) e
+                      Concluir configuração (Pendente) viram a ação primária. */}
+                  {disconnected && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={() =>
+                        toast.success(`Reconectando ${c.label}…`, {
+                          description: "Você será redirecionado para autorizar novamente.",
+                        })
+                      }
+                    >
+                      <RefreshCw data-icon="inline-start" />
+                      Reconectar
+                    </Button>
+                  )}
+                  {pending && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={() =>
+                        toast.info(`Concluindo configuração de ${c.label}…`, {
+                          description: "Finalize as credenciais para conectar.",
+                        })
+                      }
+                    >
+                      <Settings2 data-icon="inline-start" />
+                      Concluir configuração
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -288,8 +363,9 @@ export default function ChannelsPage() {
       </div>
 
       {/* ── Chaves de API ────────────────────────────────────────── */}
-      <Card className="mt-3">
-        <CardHeader className="flex-row items-center justify-between">
+      {/* mt-6 (espaçamento de seção) — gap-3 fica reservado para itens do grid. */}
+      <Card className="mt-6">
+        <CardHeader>
           <div className="flex items-center gap-2">
             <KeyRound className="size-4 text-muted-foreground" />
             <div>
@@ -299,23 +375,60 @@ export default function ChannelsPage() {
               </CardDescription>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleGenerateKey}>
-            <RefreshCw data-icon="inline-start" />
-            Gerar nova key
-          </Button>
+          {/* CardAction ativa grid-cols-[1fr_auto] — o botão volta compacto ao topo direito. */}
+          <CardAction>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmRegen(true)}
+            >
+              <RefreshCw data-icon="inline-start" />
+              Gerar nova key
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent>
+          {fullKey && (
+            <div className="mb-2 flex flex-col gap-2 rounded-md border border-heat/40 bg-heat/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <Badge className="border-none bg-primary text-primary-foreground text-[11px] font-normal">
+                  Íntegra — só agora
+                </Badge>
+                <code className="truncate font-mono text-[13px] tabular text-foreground">
+                  {fullKey}
+                </code>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  size="sm"
+                  onClick={handleCopy}
+                  className="h-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {copied ? <Check data-icon="inline-start" /> : <Copy data-icon="inline-start" />}
+                  {copied ? "Copiada" : "Copiar íntegra"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={dismissReveal}
+                  className="h-8 shrink-0 text-muted-foreground"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/40 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <Badge
                 variant="outline"
-                className="gap-1 border-border text-[10px] font-normal"
+                className="gap-1 border-border text-[11px] font-normal"
               >
                 <Circle className="size-2 fill-current text-forest-text" />
                 Ativa
               </Badge>
               <code className="truncate font-mono text-[13px] tabular text-foreground">
-                {apiKey}
+                {maskedKey}
               </code>
             </div>
             <Button
@@ -323,6 +436,8 @@ export default function ChannelsPage() {
               size="sm"
               onClick={handleCopy}
               className="h-8 shrink-0 text-muted-foreground"
+              disabled={!fullKey}
+              title={fullKey ? "Copiar íntegra" : "A íntegra desta chave já foi ocultada"}
             >
               {copied ? (
                 <Check data-icon="inline-start" className="text-forest-text" />
@@ -339,6 +454,38 @@ export default function ChannelsPage() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Confirmação destrutiva — regenerar revoga a chave atual imediatamente.
+          Usamos Dialog (o kit não tem AlertDialog); o botão de confirmação usa
+          o tom crimson para nomear o risco. */}
+      <Dialog open={confirmRegen} onOpenChange={setConfirmRegen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Gerar nova chave?</DialogTitle>
+            <DialogDescription>
+              A chave atual deixará de funcionar imediatamente. Integrações que
+              a usam vão parar até você atualizá-las com a nova chave.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button
+              size="sm"
+              className="bg-crimson text-white hover:bg-crimson/90"
+              onClick={() => {
+                handleGenerateKey();
+                setConfirmRegen(false);
+              }}
+            >
+              Gerar nova chave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

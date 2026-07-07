@@ -19,7 +19,8 @@ const personaLabel: Record<Persona, string> = {
   plataforma: "Plataforma",
 };
 const personaClass: Record<Persona, string> = {
-  cliente: "bg-heat/12 text-heat",
+  // 'text-heat' em 10px reprova AA no light — trocado por 'text-heat-text' (achado: <14px vivo)
+  cliente: "bg-heat/12 text-heat-text",
   builder: "bg-bluetron/12 text-bluetron-text",
   operador: "bg-forest/15 text-forest-text",
   admin: "bg-amethyst/14 text-amethyst-text",
@@ -90,7 +91,8 @@ export default function FluxosPage() {
           <Badge variant="outline" className="border-border font-mono text-[10px] font-normal text-muted-foreground">
             Fluxos de teste
           </Badge>
-          <Button asChild size="sm" className="ml-auto bg-heat text-heat-foreground hover:bg-heat-hover">
+          {/* CTA em --primary p/ AA (achado) */}
+          <Button asChild size="sm" className="ml-auto">
             <Link href="/dashboard">
               Abrir o produto
               <ArrowUpRight data-icon="inline-end" />
@@ -102,7 +104,8 @@ export default function FluxosPage() {
       <div className="mx-auto max-w-[1120px] px-5">
         {/* Hero */}
         <section className="py-10">
-          <span className="font-mono text-[11px] uppercase tracking-wide text-heat">
+          {/* Eyebrow em text-heat-text — <14px em heat vivo reprova AA no light (achado) */}
+          <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
             Roteiro de teste · protótipo navegável
           </span>
           <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight tracking-[-0.03em]">
@@ -132,7 +135,8 @@ export default function FluxosPage() {
           {FLOWS.map((f) => (
             <div key={f.n} className="rounded-xl border border-border bg-card p-5">
               <div className="flex flex-wrap items-baseline gap-2.5">
-                <span className="font-mono text-[12px] font-bold text-heat">
+                {/* Rótulo em muted — acento por escassez; laranja fica no quadrado numerado + CTA (achado: ~70 ocorrências de heat) */}
+                <span className="font-mono text-[12px] font-bold text-muted-foreground">
                   Fluxo {String(f.n).padStart(2, "0")}
                 </span>
                 <h3 className="text-[17px] font-semibold tracking-tight">{f.name}</h3>
@@ -143,11 +147,14 @@ export default function FluxosPage() {
                 </span>
               </div>
               <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                {/* Ícone decorativo pode ficar em heat vivo (não é texto) */}
                 <Target className="size-3.5 text-heat" />
                 {f.goal}
               </p>
 
-              <div className="mt-4 flex items-stretch gap-0 overflow-x-auto pb-1.5">
+              {/* flex-wrap: passos quebram em 2ª linha em vez de cortar 'Deploy' (achado: Fluxo 02 corta 5º passo);
+                  chips de rota rebaixadas p/ muted (achado: massa laranja / <14px em heat) */}
+              <div className="mt-4 flex flex-wrap items-stretch gap-y-2">
                 {f.steps.map((st, i) => (
                   <div key={i} className="flex items-stretch">
                     {i > 0 && (
@@ -159,7 +166,7 @@ export default function FluxosPage() {
                       rel="noopener"
                       className="group relative w-52 shrink-0 rounded-lg border border-border bg-background p-3 transition-[transform,border-color,box-shadow] hover:-translate-y-0.5 hover:border-heat hover:shadow-sm"
                     >
-                      <span className="absolute right-2.5 top-2.5 font-mono text-[10px] text-muted-foreground transition-colors group-hover:text-heat">
+                      <span className="absolute right-2.5 top-2.5 font-mono text-[10px] text-muted-foreground transition-colors group-hover:text-heat-text">
                         abrir ↗
                       </span>
                       <div className="flex size-5 items-center justify-center rounded-md bg-heat font-mono text-[11px] font-bold text-heat-foreground">
@@ -169,7 +176,7 @@ export default function FluxosPage() {
                       <div className="mt-1 min-h-[34px] text-[12px] text-muted-foreground">
                         {st.a}
                       </div>
-                      <span className="mt-2 inline-block rounded bg-heat/[0.09] px-1.5 py-0.5 font-mono text-[10.5px] text-heat">
+                      <span className="mt-2 inline-block rounded bg-muted px-1.5 py-0.5 font-mono text-[10.5px] text-muted-foreground">
                         {st.r}
                       </span>
                     </a>

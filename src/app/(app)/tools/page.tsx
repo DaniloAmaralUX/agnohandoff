@@ -59,12 +59,8 @@ const seedDocs: KbDoc[] = [
   { id: "kb_4", name: "manual-recepcao-vitalmed.pdf", chunks: 203, tokens: "56,1k", date: "11 jun 2026" },
 ];
 
-const kbMetrics = [
-  { label: "Documentos indexados", value: "24", mono: false },
-  { label: "Chunks", value: "1.842", mono: false },
-  { label: "Tools RAG ativas", value: "3", mono: false },
-  { label: "Modelo de embedding", value: "text-embedding-3-large", mono: true },
-];
+/* Métricas derivadas do estado (docs.length + soma de chunks) —
+   upload/remoção mantêm os números coerentes com a lista. */
 
 export default function ToolsPage() {
   // Estado local das ferramentas — o toggle de status vive aqui (não no mock direto).
@@ -132,6 +128,14 @@ export default function ToolsPage() {
     toast.success("Documento removido.", { description: name });
   }
 
+  const totalChunks = docs.reduce((sum, d) => sum + d.chunks, 0);
+  const kbMetrics = [
+    { label: "Documentos indexados", value: String(docs.length), mono: false },
+    { label: "Chunks", value: totalChunks.toLocaleString("pt-BR"), mono: false },
+    { label: "Ferramentas RAG ativas", value: "3", mono: false },
+    { label: "Modelo de embedding", value: "text-embedding-3-large", mono: true },
+  ];
+
   return (
     <PageShell>
       <PageHeader
@@ -151,7 +155,7 @@ export default function ToolsPage() {
       <Tabs defaultValue="ferramentas" className="mt-6">
         <TabsList>
           <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
-          <TabsTrigger value="kb">Knowledge Base</TabsTrigger>
+          <TabsTrigger value="kb">Base de conhecimento</TabsTrigger>
         </TabsList>
 
         {/* ── ABA: Ferramentas ─────────────────────────────────────── */}

@@ -12,7 +12,6 @@ import {
   Zap,
   NotebookText,
   CreditCard,
-  Sparkles,
   Circle,
   Check,
   Loader2,
@@ -26,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -126,19 +126,17 @@ export default function IntegrationsPage() {
 
   return (
     <PageShell>
+      {/* O slot de ação do PageHeader é reservado para o CTA primário — como
+          esta tela não tem um, deixamos vazio (silêncio também é informação).
+          O plano já é comunicado no rodapé da sidebar. */}
       <PageHeader
         title="Integrações"
         subtitle="Conecte a Vitalmed às ferramentas que sua equipe já usa."
-      >
-        <Badge className="heat-tint gap-1 border-transparent">
-          <Sparkles className="size-3" />
-          Pro
-        </Badge>
-      </PageHeader>
+      />
 
       {/* ── GitHub (destaque) ────────────────────────────────────── */}
       <Card className="mt-6">
-        <CardHeader className="flex-row items-start justify-between gap-4">
+        <CardHeader>
           <div className="flex items-start gap-3">
             <div className="flex size-10 items-center justify-center rounded-md bg-secondary">
               <GitBranch className="size-5" />
@@ -159,10 +157,13 @@ export default function IntegrationsPage() {
               </CardDescription>
             </div>
           </div>
-          <Button variant="outline" size="sm">
-            <RefreshCw data-icon="inline-start" />
-            Reconfigurar
-          </Button>
+          {/* CardAction devolve o botão ao topo direito no tamanho sm. */}
+          <CardAction>
+            <Button variant="outline" size="sm">
+              <RefreshCw data-icon="inline-start" />
+              Reconfigurar
+            </Button>
+          </CardAction>
         </CardHeader>
 
         <CardContent className="space-y-5">
@@ -245,7 +246,7 @@ export default function IntegrationsPage() {
                         </span>
                         <Badge
                           variant="outline"
-                          className={`shrink-0 border-border text-[10px] font-normal ${
+                          className={`shrink-0 border-border text-[11px] font-normal ${
                             r.ownership === "own"
                               ? "text-foreground"
                               : "text-muted-foreground"
@@ -259,7 +260,7 @@ export default function IntegrationsPage() {
                       </p>
                     </div>
                     <div className="hidden shrink-0 text-right sm:block">
-                      <p className="text-[11px] text-muted-foreground">last push</p>
+                      <p className="text-[11px] text-muted-foreground">último push</p>
                       <p className="font-mono text-[11px] text-foreground tabular">
                         {r.lastPush}
                       </p>
@@ -273,10 +274,12 @@ export default function IntegrationsPage() {
       </Card>
 
       {/* ── Integrações futuras ──────────────────────────────────── */}
+      {/* Rótulo de seção em sans-medium — Fraunces (h1/h2) fica reservado para
+          o título-herói de topo da página; usar serif aqui achata a hierarquia. */}
       <div className="mt-8 space-y-1">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
+        <h3 className="font-sans-force text-sm font-medium text-foreground">
           Mais integrações
-        </h2>
+        </h3>
         <p className="text-sm text-muted-foreground">
           Amplie o alcance dos seus agentes conectando outras ferramentas.
         </p>
@@ -295,7 +298,7 @@ export default function IntegrationsPage() {
                   {!it.available && (
                     <Badge
                       variant="outline"
-                      className="gap-1 border-border text-[10px] font-normal text-muted-foreground"
+                      className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
                     >
                       <Circle className="size-2 fill-current text-muted-foreground" />
                       Em breve

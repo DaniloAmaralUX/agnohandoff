@@ -25,7 +25,7 @@ export default function OnboardingPage() {
           <div className="ml-auto flex items-center gap-2 text-[13px] text-muted-foreground">
             <span className="hidden sm:inline">Já tem uma conta?</span>
             <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
-              <Link href="/dashboard">Entrar</Link>
+              <Link href="/login">Entrar</Link>
             </Button>
           </div>
         </div>

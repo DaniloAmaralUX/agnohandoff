@@ -60,7 +60,8 @@ function StatusGlyph({ status }: { status: Adesao }) {
 function RoadBadge({ status }: { status: RoadStatus }) {
   const map: Record<RoadStatus, [string, string]> = {
     feito: ["Feito", "bg-forest/12 text-forest-text"],
-    "em-progresso": ["Em progresso", "bg-heat/12 text-heat"],
+    // 10px em heat vivo reprova AA no light — heat-text (achado)
+    "em-progresso": ["Em progresso", "bg-heat/12 text-heat-text"],
     planejado: ["Planejado", "bg-muted text-muted-foreground"],
   };
   const [label, cls] = map[status];
@@ -221,7 +222,8 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-20 border-t border-border py-12">
-      <div className="flex items-center gap-2 text-heat">
+      {/* Eyebrows das seções em heat-text — texto pequeno passa AA no light (achado) */}
+      <div className="flex items-center gap-2 text-heat-text">
         <Icon className="size-4" />
         <span className="font-mono text-[11px] uppercase tracking-wide">{eyebrow}</span>
       </div>
@@ -234,11 +236,32 @@ function Section({
 export default function DesignPage() {
   const [dark, setDark] = React.useState(false);
   const [v, setV] = React.useState<Record<string, string>>({});
+  // Scrollspy p/ nav lateral — doc é ~12k px, sem 'você está aqui' o usuário perdia orientação (achado)
+  const [activeId, setActiveId] = React.useState<string>(NAV[0][0]);
   const rp = progressoRoadmap();
   const agGeral = adesao();
 
   React.useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  React.useEffect(() => {
+    const els = NAV.map(([id]) => document.getElementById(id)).filter(
+      (el): el is HTMLElement => !!el
+    );
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        // Ativo = seção mais próxima do topo dentro da janela de trigger
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   React.useEffect(() => {
@@ -290,25 +313,34 @@ export default function DesignPage() {
       </header>
 
       <div className="mx-auto flex max-w-[1180px] gap-10 px-5">
-        {/* Nav lateral fixa */}
+        {/* Nav lateral fixa + scrollspy — item ativo com fundo/texto + marcador (achado: sem 'você está aqui') */}
         <nav className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-52 shrink-0 flex-col gap-0.5 overflow-y-auto py-8 lg:flex">
-          {NAV.map(([id, label, Icon]) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              className="flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              <Icon className="size-3.5" />
-              {label}
-            </a>
-          ))}
+          {NAV.map(([id, label, Icon]) => {
+            const active = id === activeId;
+            return (
+              <a
+                key={id}
+                href={`#${id}`}
+                aria-current={active ? "location" : undefined}
+                className={`flex items-center gap-2.5 rounded-md px-3 py-1.5 text-[13px] transition-colors ${
+                  active
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-3.5" />
+                {label}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Conteúdo */}
         <main className="min-w-0 flex-1">
           {/* Hero */}
           <section id="visao" className="scroll-mt-20 py-14">
-            <span className="font-mono text-[11px] uppercase tracking-wide text-heat">
+            {/* Eyebrow em text-heat-text — <14px em heat vivo reprova AA no light (achado) */}
+            <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
               Documentação viva
             </span>
             <h1 className="mt-3 max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.02em]">
@@ -594,9 +626,10 @@ export default function DesignPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Card>
                 <CardContent className="space-y-2 pt-6 font-mono text-[12px]">
-                  <p><span className="text-heat">--ease-enter</span> cubic-bezier(.4,0,.2,1)</p>
-                  <p><span className="text-heat">--ease-exit</span> cubic-bezier(.4,0,1,1)</p>
-                  <p><span className="text-heat">--ease-spring</span> cubic-bezier(.34,1.56,.64,1)</p>
+                  {/* Tokens em mono 12px — heat-text p/ passar AA no light (achado) */}
+                  <p><span className="text-heat-text">--ease-enter</span> cubic-bezier(.4,0,.2,1)</p>
+                  <p><span className="text-heat-text">--ease-exit</span> cubic-bezier(.4,0,1,1)</p>
+                  <p><span className="text-heat-text">--ease-spring</span> cubic-bezier(.34,1.56,.64,1)</p>
                   <p className="pt-2 text-muted-foreground">durações: 150 · 200 · 300ms — nunca &gt; 500</p>
                 </CardContent>
               </Card>

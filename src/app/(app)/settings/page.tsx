@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 import {
   Check,
+  Minus,
   CreditCard,
   KeyRound,
   Activity,
@@ -39,10 +40,16 @@ import { org } from "@/lib/data";
 
 /* ── Dados locais da tela (mesmo tom do data.ts) ─────────────────── */
 
+import { PLAN, shortTokens } from "@/lib/plan-data";
+
 const planLimits = [
   { label: "Projetos", value: "10", used: "3" },
   { label: "Agentes por projeto", value: "8", used: "3" },
-  { label: "Tokens por mês", value: "6,7M", used: "4,2M" },
+  {
+    label: "Tokens por mês",
+    value: shortTokens(PLAN.tokensPerMonth),
+    used: shortTokens(PLAN.tokensUsed),
+  },
 ];
 
 const planFeatures = [
@@ -127,7 +134,7 @@ export default function SettingsPage() {
                     <CardTitle className="text-base">Plano {org.plan}</CardTitle>
                     <Badge
                       variant="outline"
-                      className="gap-1 border-heat/30 text-[11px] font-normal text-heat"
+                      className="gap-1 border-heat/30 text-[11px] font-normal text-heat-text"
                     >
                       Atual
                     </Badge>
@@ -138,9 +145,11 @@ export default function SettingsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-semibold tracking-tight tabular">
-                    R$ 890
+                    {PLAN.priceLabel}
                   </p>
-                  <p className="font-mono text-[11px] text-muted-foreground">/mês</p>
+                  <p className="font-mono text-[11px] text-muted-foreground">
+                    {PLAN.priceSuffix}
+                  </p>
                 </div>
               </CardHeader>
               <CardContent>
@@ -194,6 +203,8 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {planFeatures.map((f) => (
+                  /* Ícone negativo (Minus) para itens não inclusos evita a contradição
+                     visual (check + tachado) e melhora a leitura por screen reader. */
                   <div key={f.label} className="flex items-center gap-2.5">
                     <span
                       className={`flex size-4 items-center justify-center rounded-full ${
@@ -201,17 +212,25 @@ export default function SettingsPage() {
                           ? "bg-forest/15 text-forest-text"
                           : "bg-muted text-muted-foreground"
                       }`}
+                      aria-hidden
                     >
-                      <Check className="size-2.5" strokeWidth={3} />
+                      {f.included ? (
+                        <Check className="size-2.5" strokeWidth={3} />
+                      ) : (
+                        <Minus className="size-2.5" strokeWidth={3} />
+                      )}
                     </span>
                     <span
                       className={`text-[13px] ${
-                        f.included
-                          ? "text-foreground"
-                          : "text-muted-foreground line-through"
+                        f.included ? "text-foreground" : "text-muted-foreground"
                       }`}
                     >
                       {f.label}
+                      {!f.included && (
+                        <span className="ml-1.5 text-muted-foreground/70">
+                          — disponível no Scale
+                        </span>
+                      )}
                     </span>
                   </div>
                 ))}

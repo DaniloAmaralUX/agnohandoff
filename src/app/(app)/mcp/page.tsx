@@ -5,7 +5,15 @@ import { useForm, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Server, Wrench, Info, FolderGit2 } from "lucide-react";
+import {
+  Plus,
+  Server,
+  Wrench,
+  Info,
+  FolderGit2,
+  Settings2,
+  RefreshCw,
+} from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
 import { StatusBadge, ToneAvatar } from "@/components/bits";
@@ -196,12 +204,41 @@ export default function McpRegistryPage() {
                   )}`}
                 >
                   <Wrench className="size-3.5" />
-                  <span className="tabular">{s.tools}</span> tools
+                  <span className="tabular">{s.tools}</span> ferramentas
                 </span>
                 <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                   <FolderGit2 className="size-3.5" />
                   {s.project}
                 </span>
+                {/* Rodapé padronizado com Tools: sempre uma ação; em Erro,
+                    caminho de recuperação explícito ("Reconectar"). */}
+                <div className="ml-auto flex items-center gap-1">
+                  {s.status === "Erro" ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-crimson hover:text-crimson"
+                      onClick={() =>
+                        toast.success(`Tentando reconectar ${s.name}…`)
+                      }
+                    >
+                      <RefreshCw data-icon="inline-start" />
+                      Reconectar
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      onClick={() =>
+                        toast.success(`Detalhes de ${s.name} em breve.`)
+                      }
+                    >
+                      <Settings2 data-icon="inline-start" />
+                      Detalhes
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

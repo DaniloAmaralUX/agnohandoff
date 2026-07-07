@@ -35,6 +35,9 @@ type Draft = {
   channel: string;
 };
 
+// Rótulos curtos p/ o stepper — informação de wayfinding real (achado: 'Passo N' redundante)
+const stepLabels = ["Organização", "Workspace", "Agente", "Canal"];
+
 const emptyDraft: Draft = {
   orgName: "",
   slug: "",
@@ -98,7 +101,8 @@ export function OnboardingFlow() {
                     "flex size-8 items-center justify-center rounded-full border text-[13px] font-semibold transition-colors duration-200 ease-enter",
                     active &&
                       "border-heat bg-heat text-heat-foreground shadow-[0_0_0_4px_var(--heat-tint,rgba(250,93,25,0.12))]",
-                    done && "border-heat/30 bg-heat/10 text-heat",
+                    // text 13px em heat vivo reprova AA no light — heat-text (achado)
+                    done && "border-heat/30 bg-heat/10 text-heat-text",
                     !active && !done && "border-border bg-card text-muted-foreground"
                   )}
                 >
@@ -110,7 +114,7 @@ export function OnboardingFlow() {
                     active ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
-                  Passo {s.n}
+                  {stepLabels[i]}
                 </span>
               </div>
               {!last && (
@@ -128,11 +132,9 @@ export function OnboardingFlow() {
 
       {/* Card */}
       <div className="mt-10 overflow-hidden rounded-xl border border-border bg-card shadow-[0_24px_80px_-32px_rgba(0,0,0,0.22)]">
+        {/* Removido eyebrow 'Passo N de M' — stepper acima já é a fonte de wayfinding (achado: mesma info 3x) */}
         <div className="border-b border-border px-6 pb-5 pt-6">
-          <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
-            Passo {step} de {total}
-          </span>
-          <h1 className="mt-2 text-xl font-semibold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight">
             {current.title}
           </h1>
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
@@ -159,7 +161,8 @@ export function OnboardingFlow() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="org-slug">Slug</FieldLabel>
-                  <div className="flex h-8 w-full items-center rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
+                  {/* h-11 no mobile p/ 44px de toque (achado: inputs 32px em contexto touch) */}
+                  <div className="flex h-11 w-full items-center rounded-lg border border-input bg-transparent transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 sm:h-8">
                     <span className="pl-2.5 pr-0.5 font-mono text-[13px] text-muted-foreground">
                       agnohub.ai/
                     </span>
@@ -258,22 +261,21 @@ export function OnboardingFlow() {
           </FieldGroup>
         </div>
 
-        {/* Rodapé */}
+        {/* Rodapé — removido 'Já tenho conta' duplicado (header já tem 'Entrar'); step1 sem back = espaço à esquerda vazio (achado: rótulos divergentes p/ mesma ação) */}
         <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
-          {step === 1 ? (
-            <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
-              <Link href="/dashboard">Já tenho conta</Link>
-            </Button>
-          ) : (
+          {step > 1 ? (
             <Button variant="ghost" size="sm" onClick={back} className="text-muted-foreground">
               <ArrowLeft data-icon="inline-start" />
               Voltar
             </Button>
+          ) : (
+            <span />
           )}
+          {/* Bump p/ 44px em mobile (achado: primária 28px vs. 44px de toque); usa --primary p/ AA */}
           <Button
             size="sm"
             onClick={next}
-            className="bg-heat text-heat-foreground hover:bg-heat-hover"
+            className="h-11 sm:h-8"
           >
             {step < total ? "Continuar" : "Ir para o dashboard"}
             <ArrowRight data-icon="inline-end" />
@@ -281,16 +283,11 @@ export function OnboardingFlow() {
         </div>
       </div>
 
+      {/* Sem sublinhado — não prometer link em item inerte (achado: sublinhado morto) */}
       <p className="mt-6 text-center text-[12px] text-muted-foreground">
         Ao continuar, você concorda com os{" "}
-        <span className="cursor-default text-foreground/80 underline underline-offset-4">
-          Termos
-        </span>{" "}
-        e a{" "}
-        <span className="cursor-default text-foreground/80 underline underline-offset-4">
-          Política de Privacidade
-        </span>
-        .
+        <span className="text-foreground/80">Termos</span> e a{" "}
+        <span className="text-foreground/80">Política de Privacidade</span>.
       </p>
     </div>
   );

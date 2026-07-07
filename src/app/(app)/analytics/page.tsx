@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, BarChart3, Sparkles } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -46,11 +45,18 @@ const topAgents = agents
   .map((a) => ({ ...a, ...agentUsage[a.id] }))
   .sort((x, y) => y.calls - x.calls);
 
-// Séries de ~30 dias por período (duplicando a base de 14 dias do dashboard).
+// Séries por período. 90d agregado por semana p/ o filtro ter comportamento visível (achado: 90d = 30d).
 const seriesByPeriod: Record<string, number[]> = {
   "7d": conversationSeries.slice(-7),
   "30d": [...conversationSeries, ...conversationSeries].slice(0, 30),
-  "90d": [...conversationSeries, ...conversationSeries].slice(0, 30),
+  // 13 semanas ~ 90 dias — agregação semanal (soma de blocos de 7 amostras cíclicas)
+  "90d": Array.from({ length: 13 }, (_, w) => {
+    let sum = 0;
+    for (let d = 0; d < 7; d++) {
+      sum += conversationSeries[(w * 7 + d) % conversationSeries.length];
+    }
+    return sum;
+  }),
 };
 
 const periodLabel: Record<string, string> = {
@@ -71,10 +77,7 @@ export default function AnalyticsPage() {
         title="Analytics"
         subtitle="Como seus agentes performaram — conversas, canais e consumo."
       >
-        <Badge className="heat-tint gap-1 border-0 font-medium">
-          <Sparkles className="size-3" />
-          Pro
-        </Badge>
+        {/* Badge Pro removido — o usuário demo já é Pro (sidebar diz 'Plano Pro'); competia com o único controle funcional (achado) */}
         <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
           <SelectTrigger size="sm" className="w-[140px]">
             <SelectValue />
@@ -124,18 +127,27 @@ export default function AnalyticsPage() {
             <CardDescription>{periodLabel[period]}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex h-40 items-end gap-1">
-              {series.map((v, i) => (
-                <div
-                  key={i}
-                  className="group relative flex-1 rounded-t-sm bg-heat/85 transition-colors hover:bg-heat"
-                  style={{ height: `${(v / maxSeries) * 100}%` }}
-                >
-                  <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded bg-graphite px-1.5 py-0.5 font-mono text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-                    {v}
-                  </span>
-                </div>
-              ))}
+            {/* Barras rebaixadas p/ tint; última = 'hoje' em cheio; tooltip por tokens (achados: massa laranja + tooltip somia no dark) */}
+            <div className="relative flex h-40 items-end gap-1">
+              <span className="absolute -top-1 left-0 font-mono text-[10px] text-muted-foreground">
+                máx {maxSeries}
+              </span>
+              {series.map((v, i) => {
+                const isLast = i === series.length - 1;
+                return (
+                  <div
+                    key={i}
+                    className={`group relative flex-1 rounded-t-sm transition-colors ${
+                      isLast ? "bg-heat" : "bg-heat/30 hover:bg-heat/60"
+                    }`}
+                    style={{ height: `${(v / maxSeries) * 100}%` }}
+                  >
+                    <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded border border-border bg-popover px-1.5 py-0.5 font-mono text-[10px] text-popover-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                      {v}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
               <span>{period === "7d" ? "7 dias atrás" : "início do período"}</span>
@@ -173,7 +185,8 @@ export default function AnalyticsPage() {
       {/* ── Top agentes ──────────────────────────────────────────── */}
       <div className="mt-3">
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          {/* !flex força row layout (achado: 'Ver todos' empilhado) */}
+          <CardHeader className="!flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="size-4 text-muted-foreground" />
               <CardTitle className="text-base">Top agentes</CardTitle>
