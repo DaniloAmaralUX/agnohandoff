@@ -499,16 +499,20 @@
   from { opacity: 0; translate: 0 12px; filter: blur(4px); }
 }
 @utility animate-enter {
-  animation: craft-enter 400ms var(--ease-enter) both;
+  animation: craft-enter 280ms var(--ease-enter) both; /* budget UI < 300ms (Emil) */
   animation-delay: calc(60ms * var(--stagger, 0));
 }
 
-/* A11y — respeita quem pede menos movimento */
+/* A11y — reduced-motion = MENOS e mais suave, não zero (CRAFT §8 / Emil STANDARDS).
+   Mantemos fades curtos de opacity/cor (ajudam a compreensão) e matamos só o
+   MOVIMENTO: keyframes com deslocamento e transições de transform/translate/scale. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* keyframes de movimento (rise, craft-enter, beam-flow…) desligados */
+    animation: none !important;
+    /* transições de posição/escala colapsam; opacity/cor seguem suaves */
+    transition-property: opacity, color, background-color, border-color, fill, stroke !important;
+    transition-duration: 150ms !important;
     scroll-behavior: auto !important;
   }
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   MessagesSquare,
@@ -18,24 +18,17 @@ import {
   ChevronsUpDown,
   Check,
   Plus,
-  LogOut,
-  UserRound,
-  Sparkles,
-  LifeBuoy,
   Server,
   Brain,
   SquareTerminal,
   Rocket,
   Folder,
-  ShieldCheck,
 } from "lucide-react";
 
 import { org, workspaces } from "@/lib/data";
-import { clearApiKey } from "@/lib/auth";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
@@ -47,13 +40,11 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 /* Nav agrupada — FONTE ÚNICA da label de cada rota, usada tanto pela sidebar
@@ -112,7 +103,6 @@ export const ROUTE_LABELS: Record<string, string> = {
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
@@ -126,7 +116,7 @@ export function AppSidebar() {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent"
                 >
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-heat text-heat-foreground">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded bg-heat text-heat-foreground">
                     <span className="text-[15px] font-bold leading-none">A</span>
                   </div>
                   <div className="grid flex-1 text-left leading-tight">
@@ -137,7 +127,7 @@ export function AppSidebar() {
                       Plano {org.plan} · AgnoHub
                     </span>
                   </div>
-                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+                  <ChevronsUpDown className="ml-auto -mr-px size-4 text-muted-foreground" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -211,93 +201,6 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      {/* ── Rodapé: conta ─────────────────────────────────────────── */}
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent"
-                >
-                  <Avatar className="size-8 rounded-md">
-                    <AvatarFallback className="rounded-md bg-graphite text-[11px] font-semibold text-white">
-                      DA
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left leading-tight">
-                    <span className="truncate text-[13px] font-semibold">
-                      Danilo Amaral
-                    </span>
-                    <span className="truncate text-[11px] text-muted-foreground">
-                      danilo@vitalmed.com.br
-                    </span>
-                  </div>
-                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-60 rounded-lg"
-                align="end"
-                side="right"
-                sideOffset={8}
-              >
-                <DropdownMenuLabel className="flex items-center gap-2 py-2">
-                  <Avatar className="size-8 rounded-md">
-                    <AvatarFallback className="rounded-md bg-graphite text-[11px] font-semibold text-white">
-                      DA
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid leading-tight">
-                    <span className="text-[13px] font-semibold">Danilo Amaral</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">
-                      danilo@vitalmed.com.br
-                    </span>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 heat-tint font-medium">
-                  <Sparkles className="size-4" />
-                  Fazer upgrade para Scale
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem className="gap-2">
-                    <UserRound className="size-4 text-muted-foreground" />
-                    Perfil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                    <Settings className="size-4 text-muted-foreground" />
-                    Configurações
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2">
-                    <LifeBuoy className="size-4 text-muted-foreground" />
-                    Suporte
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="gap-2">
-                    <Link href="/super-admin">
-                      <ShieldCheck className="size-4 text-muted-foreground" />
-                      Super Admin
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="gap-2 text-crimson focus:text-crimson"
-                  onClick={() => {
-                    clearApiKey();
-                    router.push("/login");
-                  }}
-                >
-                  <LogOut className="size-4" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

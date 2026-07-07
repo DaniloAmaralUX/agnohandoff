@@ -91,7 +91,12 @@ export function CommandMenu() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent showCloseButton={false} className="gap-0 overflow-hidden p-0 sm:max-w-lg">
+      {/* ⌘K é ação de teclado (100+/dia) → abre SECO, sem zoom/fade (regra do Emil:
+          "keyboard/command-palette = no animation, ever"; Raycast não anima). */}
+      <DialogContent
+        showCloseButton={false}
+        className="gap-0 overflow-hidden p-0 duration-0 data-open:animate-none data-closed:animate-none sm:max-w-lg"
+      >
         <DialogTitle className="sr-only">Buscar telas e ações</DialogTitle>
         <Command label="Buscar telas e ações">
           <div className="flex items-center gap-2 border-b border-border px-3">

@@ -36,7 +36,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+            {/* skipDelayDuration: depois do 1º tooltip, os seguintes abrem sem
+                delay — a sidebar colapsada depende de tooltip a cada hover (Emil §4). */}
+            <TooltipProvider delayDuration={200} skipDelayDuration={300}>{children}</TooltipProvider>
           </QueryProvider>
           <Toaster />
         </ThemeProvider>
