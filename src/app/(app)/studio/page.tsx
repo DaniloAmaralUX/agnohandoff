@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Sparkles, Terminal, Wand2 } from "lucide-react";
+import { Plus, Sparkles, Terminal, TriangleAlert, Wand2 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
 import { MonoLabel } from "@/components/bits";
@@ -17,23 +17,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { studioRules as seedRules, type StudioRule } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useStudioRules,
+  useToggleStudioRule,
+  useGenerateStudioRule,
+} from "@/lib/api/studio";
 
 /* ── Cor da Badge por escopo da regra ────────────────────────────── */
-const scopeTint: Record<StudioRule["scope"], string> = {
+const scopeTint: Record<string, string> = {
   Payload: "border-bluetron/25 bg-bluetron/10 text-bluetron-text",
   Voz: "border-amethyst/25 bg-amethyst/10 text-amethyst-text",
+  Entrada: "border-forest/25 bg-forest/10 text-forest-text",
+  Saída: "border-honey/25 bg-honey/10 text-honey-text",
 };
 
-// Deriva um nome curto de regra a partir da primeira frase do prompt.
-function ruleNameFromPrompt(prompt: string) {
-  const first = prompt.trim().split(/[.\n]/)[0].trim();
-  if (first.length <= 48) return first;
-  return `${first.slice(0, 47).trimEnd()}…`;
-}
-
 export default function StudioPage() {
-  const [rules, setRules] = useState<StudioRule[]>(seedRules);
+  const { data, isLoading, isError, refetch } = useStudioRules();
+  const toggle = useToggleStudioRule();
+  const generate = useGenerateStudioRule();
+  const rules = data ?? [];
   const [prompt, setPrompt] = useState("");
 
   const activeCount = rules.filter((r) => r.active).length;
@@ -43,9 +46,7 @@ export default function StudioPage() {
   }
 
   function toggleRule(id: string, active: boolean) {
-    setRules((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, active } : r))
-    );
+    toggle.mutate({ id, active });
   }
 
   function generateRule() {
@@ -55,20 +56,10 @@ export default function StudioPage() {
       focusPrompt();
       return;
     }
-    setRules((prev) => [
-      {
-        id: `r_${Date.now()}`,
-        name: ruleNameFromPrompt(text),
-        scope: "Payload",
-        trigger: text,
-        active: true,
-      },
-      ...prev,
-    ]);
-    toast.success("Regra criada.", {
-      description: "Ative ou ajuste na lista à esquerda.",
-    });
-    setPrompt("");
+    generate.mutate(
+      { instruction: text },
+      { onSuccess: () => setPrompt("") },
+    );
   }
 
   return (
@@ -106,7 +97,28 @@ export default function StudioPage() {
           </CardHeader>
 
           <CardContent className="p-0">
-            {rules.map((rule, i) => (
+            {isError && (
+              <div className="flex items-center justify-between gap-4 px-4 py-3">
+                <div className="flex items-center gap-2 text-[13px] text-foreground">
+                  <TriangleAlert className="size-4 text-crimson" />
+                  Não foi possível carregar as regras da API.
+                </div>
+                <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  Tentar de novo
+                </Button>
+              </div>
+            )}
+            {isLoading &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={`sk-${i}`}
+                  className={`px-4 py-3.5 ${i > 0 ? "border-t border-border" : ""}`}
+                >
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="mt-2 h-3 w-full" />
+                </div>
+              ))}
+            {!isLoading && rules.map((rule, i) => (
               <div
                 key={rule.id}
                 className={`flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-accent ${
@@ -118,7 +130,7 @@ export default function StudioPage() {
                     <p className="text-sm font-medium">{rule.name}</p>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] font-normal ${scopeTint[rule.scope]}`}
+                      className={`text-[10px] font-normal ${scopeTint[rule.scope] ?? "border-border bg-muted text-muted-foreground"}`}
                     >
                       {rule.scope}
                     </Badge>
@@ -216,9 +228,10 @@ export default function StudioPage() {
                 size="sm"
                 className="w-full bg-heat text-heat-foreground hover:bg-heat-hover"
                 onClick={generateRule}
+                disabled={generate.isPending}
               >
                 <Wand2 data-icon="inline-start" />
-                Gerar regra
+                {generate.isPending ? "Gerando…" : "Gerar regra"}
               </Button>
             </CardContent>
           </Card>
