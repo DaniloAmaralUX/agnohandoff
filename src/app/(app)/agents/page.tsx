@@ -26,6 +26,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/bits";
+import { initials } from "@/lib/utils";
 import { statusDot, TONE as toneMap } from "@/lib/constants";
 import { useAgents } from "@/lib/api/agents";
 
@@ -84,7 +85,7 @@ export default function AgentsPage() {
               {isLoading ? (
                 <Skeleton className="mt-2 h-7 w-10" />
               ) : (
-                <p className="mt-2 text-2xl font-semibold tracking-tight tabular">
+                <p className="mt-2 font-mono text-2xl font-semibold tracking-tight tabular">
                   {s.value}
                 </p>
               )}
@@ -119,7 +120,7 @@ export default function AgentsPage() {
                     toneMap[a.tone] ?? "bg-secondary text-foreground"
                   }`}
                 >
-                  {a.name.slice(0, 2)}
+                  {initials(a.name)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
@@ -182,6 +183,23 @@ export default function AgentsPage() {
               </CardFooter>
             </Card>
           ))}
+
+        {/* #126: card fantasma "Criar novo" no fim da coleção — mesmo
+            padrão do ghost card de /projects; leva ao CTA de criar. */}
+        {!isLoading && !isError && !isEmpty && (
+          <Link
+            href="/agents/sofia"
+            className="flex min-h-[168px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card/40 px-4 py-6 text-center outline-none transition-colors hover:border-heat/50 hover:bg-accent focus-visible:ring-2 focus-visible:ring-heat/40"
+          >
+            <div className="flex size-11 items-center justify-center rounded-md heat-tint">
+              <Plus className="size-5" />
+            </div>
+            <p className="text-sm font-medium">Novo agente</p>
+            <p className="text-pretty text-[13px] text-muted-foreground">
+              Configure um agente para atender seus pacientes.
+            </p>
+          </Link>
+        )}
 
         {isEmpty && (
           <EmptyState

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ArrowLeft, Circle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,22 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge, ToneAvatar } from "@/components/bits";
+import { StatCard, ToneAvatar } from "@/components/bits";
+import { initials } from "@/lib/utils";
+// #119: status de ORG tem namespace próprio ("Ativo" = assinatura saudável,
+// forest; "Suspenso" = alarme) — statusDot genérico pintava errado.
+import { orgStatusDot } from "@/lib/constants";
 import { superAdminOrgs, platformMetrics } from "@/lib/data";
 
 export const metadata = {
   title: "AgnoHub — Super Admin",
 };
-
-/* Iniciais para o ToneAvatar (2 caracteres). */
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 /* Rotação de tons para dar cor aos avatares das orgs. */
 const orgTones = ["heat", "bluetron", "forest", "amethyst", "honey"];
@@ -92,32 +86,17 @@ export default function SuperAdminPage() {
           </p>
         </div>
 
-        {/* Métricas */}
+        {/* Métricas — anatomia canônica de KPI (#125) via StatCard. */}
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {platformMetrics.map((m) => (
-            <Card key={m.label} className="gap-0 py-4">
-              <CardContent className="px-4">
-                <p className="text-[13px] text-muted-foreground">{m.label}</p>
-                <p className="mt-2 font-mono text-2xl font-semibold tracking-tight tabular">
-                  {m.value}
-                </p>
-                <div className="mt-2 flex items-center gap-1.5 text-[12px]">
-                  <span
-                    className={`inline-flex items-center gap-0.5 font-medium ${
-                      m.trend === "up" ? "text-forest-text" : "text-muted-foreground"
-                    }`}
-                  >
-                    {m.trend === "up" ? (
-                      <ArrowUpRight className="size-3.5" />
-                    ) : (
-                      <ArrowDownRight className="size-3.5" />
-                    )}
-                    {m.delta}
-                  </span>
-                  <span className="text-muted-foreground">{m.hint}</span>
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard
+              key={m.label}
+              label={m.label}
+              value={m.value}
+              delta={m.delta}
+              trend={m.trend}
+              hint={m.hint}
+            />
           ))}
         </div>
 
@@ -174,7 +153,17 @@ export default function SuperAdminPage() {
                       {org.tokens}
                     </TableCell>
                     <TableCell className="text-right">
-                      <StatusBadge status={org.status} />
+                      {/* #119: dot pelo namespace de org (orgStatusDot), não
+                          pelo statusDot genérico de projeto. */}
+                      <Badge
+                        variant="outline"
+                        className="gap-1.5 border-border text-[11px] font-normal text-foreground"
+                      >
+                        <Circle
+                          className={`size-2 fill-current ${orgStatusDot(org.status)}`}
+                        />
+                        {org.status}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))}

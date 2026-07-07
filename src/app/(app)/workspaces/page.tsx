@@ -51,6 +51,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 // Fonte única de statusDot — evita divergência de cor por tela (achado consistency).
 import { statusDot } from "@/lib/constants";
+import { initials } from "@/lib/utils";
 import { ToneAvatar } from "@/components/bits";
 
 // Consumo de tokens — fonte única do plano (src/lib/plan-data.ts) para
@@ -249,8 +250,10 @@ export default function WorkspacesPage() {
                   <div className="flex items-start justify-between gap-2">
                     {/* ToneAvatar unificando linguagem com /projects, tom por hash
                         do id — identidade, não índice (achado consistency). */}
+                    {/* initials() canônico (@/lib/utils) — "Atendimento Clínico"
+                        vira "AC", não "At" (consistente com /projects). */}
                     <ToneAvatar tone={toneFor(ws.id)} className="size-9 text-[13px]">
-                      {ws.name.slice(0, 2).toUpperCase()}
+                      {initials(ws.name)}
                     </ToneAvatar>
                     {i === 0 && (
                       <Badge

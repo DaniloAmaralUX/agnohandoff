@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
+import { StatCard } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -129,12 +130,6 @@ export default function ToolsPage() {
   }
 
   const totalChunks = docs.reduce((sum, d) => sum + d.chunks, 0);
-  const kbMetrics = [
-    { label: "Documentos indexados", value: String(docs.length), mono: false },
-    { label: "Chunks", value: totalChunks.toLocaleString("pt-BR"), mono: false },
-    { label: "Ferramentas RAG ativas", value: "3", mono: false },
-    { label: "Modelo de embedding", value: "text-embedding-3-large", mono: true },
-  ];
 
   return (
     <PageShell>
@@ -253,22 +248,23 @@ export default function ToolsPage() {
             />
           </label>
 
-          {/* Métricas */}
+          {/* Métricas — KPIs numéricos usam o StatCard canônico (#125,
+              valor em Geist Mono tabular); o modelo de embedding é valor
+              textual longo, fora da anatomia, e mantém card próprio. */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {kbMetrics.map((m) => (
-              <Card key={m.label} className="gap-0 py-4">
-                <CardContent className="px-4">
-                  <p className="text-[13px] text-muted-foreground">{m.label}</p>
-                  <p
-                    className={`mt-2 truncate text-lg font-semibold tracking-tight ${
-                      m.mono ? "font-mono text-sm" : "text-2xl tabular"
-                    }`}
-                  >
-                    {m.value}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            <StatCard label="Documentos indexados" value={String(docs.length)} />
+            <StatCard label="Chunks" value={totalChunks.toLocaleString("pt-BR")} />
+            <StatCard label="Ferramentas RAG ativas" value="3" />
+            <Card className="gap-0 py-4">
+              <CardContent className="px-4">
+                <p className="text-[13px] text-muted-foreground">
+                  Modelo de embedding
+                </p>
+                <p className="mt-2 truncate font-mono text-sm font-semibold tracking-tight">
+                  text-embedding-3-large
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Documentos indexados */}

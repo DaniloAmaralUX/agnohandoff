@@ -126,7 +126,7 @@ export type Metric = {
 export const metrics: Metric[] = [
   { label: "Conversas (7d)", value: "1.284", delta: "+12,4%", trend: "up", hint: "vs. semana anterior" },
   { label: "Taxa de resolução", value: "87%", delta: "+3,1%", trend: "up", hint: "sem intervenção humana" },
-  { label: "Resposta média", value: "1,8s", delta: "-0,4s", trend: "up", hint: "primeira resposta" },
+  { label: "Resposta média", value: "1,8 s", delta: "-0,4 s", trend: "up", hint: "primeira resposta" },
   // Alinhado ao plano canônico (src/lib/plan-data.ts): 152K de 2M = 7,6%.
   { label: "Tokens (mês)", value: "152K", delta: "7,6% do limite", trend: "up", hint: "plano Pro · 2M" },
 ];
@@ -136,7 +136,7 @@ export const metrics: Metric[] = [
 // #8: labels sem sufixo temporal ("7d"/"mês") — os cards reagem ao seletor
 // global de período; o rótulo diz "no período" implicitamente via CardDescription.
 export const analyticsMetrics: Metric[] = [
-  { label: "Latência p95", value: "1,4s", delta: "-120ms", trend: "up", hint: "no período" },
+  { label: "Latência p95", value: "1,4 s", delta: "-120 ms", trend: "up", hint: "no período" },
   { label: "Custo estimado", value: "R$ 486", delta: "+8,2%", trend: "down", hint: "no período" },
   { label: "Handoff humano", value: "13%", delta: "-2,1pp", trend: "up", hint: "conversas escaladas" },
   { label: "Tokens consumidos", value: "152K", delta: "7,6% do limite", trend: "up", hint: "plano Pro · 2M" },

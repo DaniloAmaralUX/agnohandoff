@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { agents, deployTargets, deployments } from "@/lib/data";
+import { initials } from "@/lib/utils";
 
 /* ── Ícone + tint por alvo de publicação ────────────────────────── */
 const targetMeta: Record<string, { icon: typeof Server; tint: string }> = {
@@ -174,7 +175,8 @@ export default function DeployPage() {
                         tone={agentTone(d.agent)}
                         className="size-7 text-[11px]"
                       >
-                        {d.agent.slice(0, 1)}
+                        {/* initials() canônico (#128) — antes slice(0,1) cru. */}
+                        {initials(d.agent)}
                       </ToneAvatar>
                       <span className="font-medium text-foreground">
                         {d.agent}

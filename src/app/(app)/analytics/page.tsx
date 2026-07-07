@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
+import { StatCard } from "@/components/bits";
 import {
   Card,
   CardContent,
@@ -93,30 +94,16 @@ export default function AnalyticsPage() {
       {/* ── Métricas ─────────────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {/* #84 #8: KPIs específicos de analytics ("no período"), sem repetir dashboard. */}
+        {/* #125: anatomia canônica de KPI — StatCard (valor em Geist Mono tabular) */}
         {analyticsMetrics.map((m) => (
-          <Card key={m.label} className="gap-0 py-4">
-            <CardContent className="px-4">
-              <p className="text-[13px] text-muted-foreground">{m.label}</p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight tabular">
-                {m.value}
-              </p>
-              <div className="mt-2 flex items-center gap-1.5 text-[12px]">
-                <span
-                  className={`inline-flex items-center gap-0.5 font-medium ${
-                    m.trend === "up" ? "text-forest-text" : "text-muted-foreground"
-                  }`}
-                >
-                  {m.trend === "up" ? (
-                    <ArrowUpRight className="size-3.5" />
-                  ) : (
-                    <ArrowDownRight className="size-3.5" />
-                  )}
-                  {m.delta}
-                </span>
-                <span className="text-muted-foreground">{m.hint}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            delta={m.delta}
+            trend={m.trend}
+            hint={m.hint}
+          />
         ))}
       </div>
 
@@ -129,7 +116,14 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             {/* Barras rebaixadas p/ tint; última = 'hoje' em cheio; tooltip por tokens (achados: massa laranja + tooltip somia no dark) */}
-            <div className="relative flex h-40 items-end gap-1">
+            {/* #71: gráfico div-based legível por leitor de tela */}
+            <div
+              role="img"
+              aria-label={`Barras: conversas por ${
+                period === "90d" ? "semana" : "dia"
+              }, ${periodLabel[period].toLowerCase()}, pico de ${maxSeries}`}
+              className="relative flex h-40 items-end gap-1"
+            >
               <span className="absolute -top-1 left-0 font-mono text-[10px] text-muted-foreground">
                 máx {maxSeries}
               </span>
@@ -171,7 +165,12 @@ export default function AnalyticsPage() {
                     {c.value}%
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                {/* #71: barra de progresso legível por leitor de tela */}
+                <div
+                  role="img"
+                  aria-label={`${c.name}: ${c.value}% das conversas`}
+                  className="h-1.5 overflow-hidden rounded-full bg-muted"
+                >
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${c.value}%`, background: c.color }}

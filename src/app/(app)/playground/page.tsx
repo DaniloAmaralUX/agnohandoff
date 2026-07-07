@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { playgroundThread } from "@/lib/data";
+import { initials } from "@/lib/utils";
 
 // Agentes selecionáveis no seletor do topo (mesmo tom do data.ts).
 const playgroundAgents = [
@@ -54,7 +55,8 @@ const playgroundAgents = [
 const debugRows = [
   { label: "Tokens (entrada)", value: "1.842", tone: "text-foreground" },
   { label: "Tokens (saída)", value: "634", tone: "text-foreground" },
-  { label: "Latência", value: "1,8s", tone: "text-foreground" },
+  // NBSP antes da unidade — número não separa do "s" em quebra de linha.
+  { label: "Latência", value: "1,8 s", tone: "text-foreground" },
 ];
 
 export default function PlaygroundPage() {
@@ -102,7 +104,7 @@ export default function PlaygroundPage() {
                       className="-ml-2 h-9 gap-2 px-2"
                     >
                       <span className="flex size-7 items-center justify-center rounded-md bg-heat/12 text-[12px] font-semibold text-heat-text">
-                        {activeAgent.name.slice(0, 2)}
+                        {initials(activeAgent.name)}
                       </span>
                       <span className="flex flex-col items-start leading-tight">
                         <span className="text-sm font-medium">
@@ -162,7 +164,7 @@ export default function PlaygroundPage() {
                     <div key={i} className="flex items-start gap-2.5">
                       <Avatar className="mt-0.5 size-7 shrink-0">
                         <AvatarFallback className="bg-heat/12 text-[11px] font-semibold text-heat-text">
-                          {activeAgent.name.slice(0, 2)}
+                          {initials(activeAgent.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="max-w-[78%] space-y-1.5">

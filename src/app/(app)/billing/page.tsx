@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { StatCard } from "@/components/bits";
 
 /* ── Dados locais (mock, tom Vitalmed) ──────────────────────────── */
 
@@ -42,7 +43,8 @@ const creditSeed = {
   available: 1_848_000,
   used: 152_000,
   total: 2_000_000,
-  renewsIn: "18 dias",
+  //   antes da unidade: número não separa de "dias" em quebra de linha.
+  renewsIn: "18 dias",
 };
 
 const fmt = (n: number) => n.toLocaleString("pt-BR");
@@ -247,18 +249,10 @@ export default function BillingPage() {
         </Button>
       </PageHeader>
 
-      {/* ── Métricas de créditos ─────────────────────────────────── */}
+      {/* ── Métricas de créditos — anatomia canônica de KPI (#125). ── */}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {creditMetrics.map((m) => (
-          <Card key={m.label} className="gap-0 py-4">
-            <CardContent className="px-4">
-              <p className="text-[13px] text-muted-foreground">{m.label}</p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight tabular font-mono">
-                {m.value}
-              </p>
-              <p className="mt-2 text-[12px] text-muted-foreground">{m.hint}</p>
-            </CardContent>
-          </Card>
+          <StatCard key={m.label} label={m.label} value={m.value} hint={m.hint} />
         ))}
       </div>
 

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { agents, tools, channels } from "@/lib/data";
+import { initials } from "@/lib/utils";
 import { BuilderActions, PreviewChat } from "./builder-bits";
 import { StatusBadge, ToneAvatar } from "@/components/bits";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,7 @@ export default async function AgentBuilder({
             </Link>
           </Button>
           <ToneAvatar tone={agent.avatarTone} className="size-11 text-sm">
-            {agent.name.slice(0, 2)}
+            {initials(agent.name)}
           </ToneAvatar>
           <div>
             <div className="flex items-center gap-2">
@@ -180,7 +181,7 @@ export default async function AgentBuilder({
                   <Field>
                     <div className="flex items-center justify-between">
                       <FieldLabel>Temperatura</FieldLabel>
-                      <span className="font-mono text-[13px] text-muted-foreground">
+                      <span className="font-mono text-[13px] tabular text-muted-foreground">
                         0.7
                       </span>
                     </div>
@@ -193,7 +194,7 @@ export default async function AgentBuilder({
                   <Field>
                     <div className="flex items-center justify-between">
                       <FieldLabel>Máximo de tokens por resposta</FieldLabel>
-                      <span className="font-mono text-[13px] text-muted-foreground">
+                      <span className="font-mono text-[13px] tabular text-muted-foreground">
                         1.024
                       </span>
                     </div>

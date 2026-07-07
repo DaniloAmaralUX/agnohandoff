@@ -360,6 +360,22 @@ export default function ChannelsPage() {
             </Card>
           );
         })}
+
+        {/* ── Card fantasma: adicionar canal (#126) — mesmo padrão de /projects,
+            leva ao FormSheet existente. */}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex min-h-[168px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card/40 px-4 py-6 text-center outline-none transition-colors hover:border-heat/50 hover:bg-accent focus-visible:ring-2 focus-visible:ring-heat/40"
+        >
+          <div className="flex size-11 items-center justify-center rounded-md heat-tint">
+            <Plus className="size-5" />
+          </div>
+          <p className="text-sm font-medium">Adicionar canal</p>
+          <p className="text-pretty text-[13px] text-muted-foreground">
+            Conecte WhatsApp, Telegram, Instagram ou seu site.
+          </p>
+        </button>
       </div>
 
       {/* ── Chaves de API ────────────────────────────────────────── */}

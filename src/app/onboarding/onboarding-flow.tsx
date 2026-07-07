@@ -120,7 +120,7 @@ export function OnboardingFlow() {
               {!last && (
                 <span
                   className={cn(
-                    "mx-2 -mt-6 h-px flex-1 transition-colors",
+                    "mx-2 -mt-6 h-px flex-1 transition-colors duration-200 ease",
                     done ? "bg-heat/40" : "bg-border"
                   )}
                 />

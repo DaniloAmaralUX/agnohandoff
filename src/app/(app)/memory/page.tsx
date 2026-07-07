@@ -112,7 +112,7 @@ export default function MemoryPage() {
                 <s.icon className="size-4" />
                 <p className="text-[13px]">{s.label}</p>
               </div>
-              <p className="mt-2 text-2xl font-semibold tracking-tight tabular">
+              <p className="mt-2 font-mono text-2xl font-semibold tracking-tight tabular">
                 {s.value}
               </p>
               <p className="mt-1.5 text-[12px] text-muted-foreground">

@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  ArrowUpRight,
-  ArrowDownRight,
   Plus,
   FileBarChart,
   Bot,
@@ -13,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
+import { StatCard } from "@/components/bits";
+import { initials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -58,30 +58,16 @@ export default function DashboardPage() {
 
       {/* ── Métricas ─────────────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {/* #125: anatomia canônica de KPI — StatCard (valor em Geist Mono tabular) */}
         {metrics.map((m) => (
-          <Card key={m.label} className="gap-0 py-4">
-            <CardContent className="px-4">
-              <p className="text-[13px] text-muted-foreground">{m.label}</p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight tabular">
-                {m.value}
-              </p>
-              <div className="mt-2 flex items-center gap-1.5 text-[12px]">
-                <span
-                  className={`inline-flex items-center gap-0.5 font-medium ${
-                    m.trend === "up" ? "text-forest-text" : "text-muted-foreground"
-                  }`}
-                >
-                  {m.trend === "up" ? (
-                    <ArrowUpRight className="size-3.5" />
-                  ) : (
-                    <ArrowDownRight className="size-3.5" />
-                  )}
-                  {m.delta}
-                </span>
-                <span className="text-muted-foreground">{m.hint}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            delta={m.delta}
+            trend={m.trend}
+            hint={m.hint}
+          />
         ))}
       </div>
 
@@ -95,7 +81,12 @@ export default function DashboardPage() {
           <CardContent>
             {/* Barras em tint (bg-heat/30), 'hoje' cheio — acento por escassez (achado: 30 barras laranja diluem o CTA único);
                 referência de escala à esquerda p/ leitura sem hover (achado: sem eixo Y, tooltip falha em touch/dark) */}
-            <div className="relative flex h-40 items-end gap-1.5">
+            {/* #71: gráfico div-based legível por leitor de tela */}
+            <div
+              role="img"
+              aria-label={`Barras: conversas por dia nos últimos 14 dias, pico de ${maxSeries}`}
+              className="relative flex h-40 items-end gap-1.5"
+            >
               <span className="absolute -top-1 left-0 font-mono text-[10px] text-muted-foreground">
                 máx {maxSeries}
               </span>
@@ -138,7 +129,12 @@ export default function DashboardPage() {
                     {c.value}%
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                {/* #71: barra de progresso legível por leitor de tela */}
+                <div
+                  role="img"
+                  aria-label={`${c.name}: ${c.value}% das conversas`}
+                  className="h-1.5 overflow-hidden rounded-full bg-muted"
+                >
                   <div
                     className="h-full rounded-full"
                     style={{ width: `${c.value}%`, background: c.color }}
@@ -179,7 +175,8 @@ export default function DashboardPage() {
                     toneMap[a.avatarTone]
                   }`}
                 >
-                  {a.name.slice(0, 2)}
+                  {/* #128: iniciais canônicas (2 letras, maiúsculas) */}
+                  {initials(a.name)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{a.name}</p>
@@ -226,11 +223,8 @@ export default function DashboardPage() {
               >
                 <Avatar className="size-8">
                   <AvatarFallback className="bg-secondary text-[11px] font-medium text-secondary-foreground">
-                    {c.contact
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
+                    {/* #128: iniciais canônicas (2 letras, maiúsculas) */}
+                    {initials(c.contact)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
@@ -250,7 +244,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                  <span className="whitespace-nowrap text-[11px] tabular text-muted-foreground">
                     {c.time}
                   </span>
                   {/* Padroniza em 11px (achado: 10 vs 11px em cards gêmeos) */}

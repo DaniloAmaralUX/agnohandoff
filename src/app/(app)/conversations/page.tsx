@@ -29,7 +29,7 @@ import {
   type Conversation,
   type ChatMessage,
 } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
 import { statusDot } from "@/lib/constants";
 import { EmptyState } from "@/components/bits";
 
@@ -39,14 +39,6 @@ const channelIcon: Record<Conversation["channel"], typeof MessageCircle> = {
   Telegram: Send,
   Instagram: Camera,
 };
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("");
-}
 
 type Filtro = "todas" | "ativas" | "resolvidas";
 

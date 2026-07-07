@@ -43,7 +43,8 @@ const repoBySlug: Record<
   string,
   { repo: string; ownership: "own" | "org"; lastPush: string }
 > = {
-  prj_sofia: { repo: "vitalmed/sofia-agents", ownership: "own", lastPush: "há 2 h" },
+  // NBSP antes da unidade ("2 h") — evita quebra número/unidade (CRAFT).
+  prj_sofia: { repo: "vitalmed/sofia-agents", ownership: "own", lastPush: "há 2 h" },
   prj_recep: { repo: "vitalmed/agent-templates", ownership: "org", lastPush: "há 3 dias" },
   prj_leo: { repo: "vitalmed/leo-sdr", ownership: "own", lastPush: "ontem" },
 };

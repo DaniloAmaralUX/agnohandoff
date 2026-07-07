@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { useProjects, useCreateProject } from "@/lib/api/projects";
 import { workspaces } from "@/lib/data";
+import { initials } from "@/lib/utils";
 
 /* Tom do avatar por projeto — mantém cada card com cor própria (design system). */
 const tones = ["heat", "bluetron", "forest", "amethyst", "honey"] as const;
@@ -40,12 +41,6 @@ const newProjectSchema = z.object({
   workspace: z.string().min(1, "Escolha um workspace."),
 });
 type NewProjectForm = z.infer<typeof newProjectSchema>;
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[1][0]).toUpperCase();
-}
 
 /* Pluralização pt-BR — corrige "1 agentes / 1 canais" (achado consistency). */
 function plural(n: number, singular: string, plural = `${singular}s`) {

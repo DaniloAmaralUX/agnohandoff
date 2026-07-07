@@ -364,7 +364,8 @@ export default function SettingsPage() {
                   Conectado
                 </Badge>
                 <span className="font-mono text-[11px] text-muted-foreground">
-                  latência 42ms · último trace há 3 min
+                  {/*   antes da unidade — número não separa de "min". */}
+                  {"latência 42 ms · último trace há 3 min"}
                 </span>
               </div>
             </CardContent>
@@ -495,7 +496,7 @@ export default function SettingsPage() {
                 <div className="space-y-0.5">
                   <Label htmlFor="perf-cache">Cache de respostas</Label>
                   <p className="text-[11px] text-muted-foreground">
-                    Reaproveita respostas idênticas por 5 min
+                    {"Reaproveita respostas idênticas por 5 min"}
                   </p>
                 </div>
                 <Switch
