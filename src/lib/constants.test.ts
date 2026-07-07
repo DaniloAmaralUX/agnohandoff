@@ -19,9 +19,12 @@ const EXPECTED: Record<string, string> = {
   Treinando: "text-honey-text",
   Pendente: "text-honey-text",
   Aguardando: "text-honey-text",
+  Publicando: "text-honey-text",
   // crimson
   Desconectado: "text-crimson",
   Vencido: "text-crimson",
+  Erro: "text-crimson",
+  Falhou: "text-crimson",
 };
 
 describe("statusDot (mapa canônico)", () => {
@@ -49,7 +52,7 @@ describe("statusDot (mapa canônico)", () => {
 
 describe("TONE (mapa canônico de tons)", () => {
   it("mantém as classes esperadas por tom", () => {
-    expect(TONE.heat).toBe("bg-heat/12 text-heat");
+    expect(TONE.heat).toBe("bg-heat/12 text-heat-text");
     expect(TONE.bluetron).toBe("bg-bluetron/12 text-bluetron-text");
     expect(TONE.forest).toBe("bg-forest/12 text-forest-text");
     expect(TONE.amethyst).toBe("bg-amethyst/12 text-amethyst-text");

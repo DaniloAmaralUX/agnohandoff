@@ -50,10 +50,11 @@ const playgroundAgents = [
 ];
 
 // Linhas de debug (mock) — apenas leitura.
+// #101: valores em text-foreground (labels muted) — espelha Temperatura/Session ID.
 const debugRows = [
-  { label: "Tokens (entrada)", value: "1.842", tone: "text-muted-foreground" },
-  { label: "Tokens (saída)", value: "634", tone: "text-muted-foreground" },
-  { label: "Latência", value: "1,8s", tone: "text-muted-foreground" },
+  { label: "Tokens (entrada)", value: "1.842", tone: "text-foreground" },
+  { label: "Tokens (saída)", value: "634", tone: "text-foreground" },
+  { label: "Latência", value: "1,8s", tone: "text-foreground" },
 ];
 
 export default function PlaygroundPage() {
@@ -100,7 +101,7 @@ export default function PlaygroundPage() {
                       size="sm"
                       className="-ml-2 h-9 gap-2 px-2"
                     >
-                      <span className="flex size-7 items-center justify-center rounded-md bg-heat/12 text-[12px] font-semibold text-heat">
+                      <span className="flex size-7 items-center justify-center rounded-md bg-heat/12 text-[12px] font-semibold text-heat-text">
                         {activeAgent.name.slice(0, 2)}
                       </span>
                       <span className="flex flex-col items-start leading-tight">
@@ -160,7 +161,7 @@ export default function PlaygroundPage() {
                   ) : (
                     <div key={i} className="flex items-start gap-2.5">
                       <Avatar className="mt-0.5 size-7 shrink-0">
-                        <AvatarFallback className="bg-heat/12 text-[11px] font-semibold text-heat">
+                        <AvatarFallback className="bg-heat/12 text-[11px] font-semibold text-heat-text">
                           {activeAgent.name.slice(0, 2)}
                         </AvatarFallback>
                       </Avatar>

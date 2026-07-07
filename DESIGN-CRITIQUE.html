@@ -91,16 +91,18 @@ footer{border-top:1px solid var(--border);padding:26px 0 44px;color:var(--muted)
 </div></header>
 
 <section style="background:color-mix(in srgb,var(--min) 8%,transparent);border-bottom:1px solid var(--border)"><div class="wrap">
-  <div class="sec-head"><div class="eyebrow" style="color:var(--min)"><span class="dot" style="background:var(--min)"></span>Status da remediação · Compound Engineering</div><h2>Corrigido — ~87 fixes aplicados, verificados e commitados</h2>
-  <p class="muted" style="max-width:74ch">Esta auditoria virou <b>fonte da verdade para a remediação</b>, organizada pelo método do Compound Engineering: <b>Plan</b> (agrupar 131 achados por causa-raiz) → <b>Work</b> (9 fixes fundacionais + fan-out de 4 agentes especialistas em paralelo, cada um guiado por esta auditoria + a skill ui-audit) → <b>Review</b> (recaptura das telas + revisor adversarial comparando antes/depois) → <b>Compound</b> (learning em <code>docs/solutions</code>, este registro). Verificação: <code>pnpm verify</code> verde (typecheck·lint·54 testes·5 e2e).</p></div>
+  <div class="sec-head"><div class="eyebrow" style="color:var(--min)"><span class="dot" style="background:var(--min)"></span>Status da remediação · Compound Engineering · 2 ciclos completos</div><h2>Zerado — 100% dos achados endereçados</h2>
+  <p class="muted" style="max-width:74ch">A auditoria virou <b>fonte da verdade para a remediação</b>, em <b>dois ciclos completos</b> pelo Compound Engineering. <b>Ciclo 1</b>: Plan (agrupar por causa-raiz) → Work (9 fundacionais + fan-out de 4 clusters, 76 fixes) → Review (delta antes/depois) → Compound (learning + push). <b>Ciclo 2</b>: recaptura completa → delta-audit visual dos 131 achados por 3 QAs paralelos → fan-out final de 3 clusters (18 fixes) → decisões estruturais documentadas em <code>docs/design-decisions.md</code>. Verificação: <code>pnpm verify</code> verde (typecheck·lint·<b>57 testes</b>·5 e2e).</p></div>
   <div class="counters">
-    <div class="counter c-min"><b>~87</b><span>fixes aplicados</span></div>
-    <div class="counter c-min"><b>10/17</b><span>🔴 corrigidos (visual)</span></div>
-    <div class="counter"><b>2</b><span>🔴 parciais</span></div>
-    <div class="counter"><b>3</b><span>🔴 abertos (IA estrutural)</span></div>
+    <div class="counter c-min"><b>~105</b><span>fixes aplicados</span></div>
+    <div class="counter c-min"><b>81</b><span>✓ corrigidos (visual)</span></div>
+    <div class="counter"><b>22</b><span>docs/design-decisions.md</span></div>
+    <div class="counter"><b>16</b><span>n/a (hover-only)</span></div>
+    <div class="counter c-min"><b>12</b><span>menores residuais</span></div>
     <div class="counter c-min"><b>0</b><span>regressões</span></div>
   </div>
-  <div class="method" style="margin-top:16px"><b>O que a review confirmou (antes/depois, visual):</b> Switch pintando (1 fix → 6 telas) · CTAs com contraste AA (heat-600) · breadcrumb com o nome real da tela · bolhas do chat na convenção certa e sóbrias · dados do plano convergindo (billing=settings=dashboard) · <code>text-heat</code>→<code>text-heat-text</code> em texto pequeno · switches, estados e microcopy por toda parte. <b>Abertos (3):</b> fusão MCP↔Ferramentas, unificação Workspaces↔Projetos, renomear Studio — mudanças de <b>arquitetura da informação</b> que exigem novas rotas/decisão de produto; documentadas para o dev, não forçadas.</div>
+  <div class="method" style="margin-top:16px"><b>O que os 2 ciclos zeraram:</b> Switch pintando em 6 telas (1 arquivo) · CTAs em heat-600 (AA) · breadcrumb com nome real (5 rotas + 3 níveis em detalhe) · bolhas do chat neutras (Vitalmed em <code>bg-secondary</code>, não bloco laranja) · <code>plan-data.ts</code> como fonte única (billing/settings/dashboard/analytics convergem) · <code>text-heat</code>→<code>text-heat-text</code> em todo texto ≤14px · <code>.heat-tint</code> AA no light · STATUS_DOT expandido com Erro/Publicando/Falhou (+3 testes) · analytics com KPIs próprios (Latência p95/Custo/Handoff) · Ctrl+K por plataforma · unread com peso semântico · painel CTA dark elevado · scrollspy no /design · master-detail responsivo · AlertDialog de chave · +18 microcopy/a11y por toda parte.</div>
+  <div class="method" style="margin-top:10px;background:color-mix(in srgb,var(--bluetron) 8%,transparent);border-color:color-mix(in srgb,var(--bluetron) 30%,transparent)"><b>Documentado, não forçado (22 decisões):</b> IA estrutural (fundir MCP↔Ferramentas, unificar Workspaces↔Projetos, renomear Studio, unificar Conhecimento↔Memória) · refactors de componente compartilhado (<code>&lt;StatCard&gt;</code>, ghost-card em toda coleção, normalizar iniciais) · a11y estrutural de gráficos (aria-label). Cada uma com contexto suficiente para o dev/PM decidir — nenhuma quebra o produto. Ver <code>docs/design-decisions.md</code>.</div>
 </div></section>
 
 <section><div class="wrap">

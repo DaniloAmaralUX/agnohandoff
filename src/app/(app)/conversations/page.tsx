@@ -241,7 +241,12 @@ export default function ConversationsPage() {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <p className="truncate text-sm font-medium">
+                        {/* #100: unread reforçado por peso (nome semibold) +
+                            preview em foreground — o dot vira reforço, não sinal único. */}
+                        <p className={cn(
+                          "truncate text-sm",
+                          c.unread ? "font-semibold" : "font-medium",
+                        )}>
                           {c.contact}
                         </p>
                         <CIcon className="size-3 shrink-0 text-muted-foreground" />
@@ -250,7 +255,10 @@ export default function ConversationsPage() {
                         </span>
                       </div>
                       <div className="mt-0.5 flex items-center gap-1.5">
-                        <p className="truncate text-[12px] text-muted-foreground">
+                        <p className={cn(
+                          "truncate text-[12px]",
+                          c.unread ? "text-foreground" : "text-muted-foreground",
+                        )}>
                           {c.preview}
                         </p>
                         {c.unread && (

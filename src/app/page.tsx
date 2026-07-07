@@ -260,7 +260,9 @@ export default function Landing() {
       {/* ── CTA final ───────────────────────────────────────────── */}
       {/* No dark, o painel graphite ficava tonalmente igual ao fundo — borda mais forte + sombra p/ elevar (achado: hierarquia perdida no dark) */}
       <section className="mx-auto max-w-[1180px] px-5 py-24">
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center shadow-[0_24px_80px_-24px_rgba(0,0,0,0.35)] dark:border-white/12 dark:shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
+        {/* #4: no dark, bg-graphite ficava tonalmente igual ao --background. Elevamos 2 steps (--sidebar/accent)
+             e reforçamos a borda p/ recuperar o pico de contraste do painel. */}
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center shadow-[0_24px_80px_-24px_rgba(0,0,0,0.35)] dark:border-white/15 dark:bg-[oklch(0.34_0.008_55)] dark:shadow-[0_24px_80px_-24px_rgba(0,0,0,0.7)]">
           <div className="grid-bg absolute inset-0 opacity-[0.15]" />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-tight tracking-tight text-white">

@@ -138,6 +138,56 @@ const ALL_VARS = [
   ...SIDEBAR.map((x) => x[0]),
 ];
 
+/* #51: OKLCH autorado (globals.css) — o browser resolve getPropertyValue p/ lab() truncado.
+   Mostramos a string oklch() como valor principal; o lab() computado vira linha secundária. */
+const OKLCH_LIGHT: Record<string, string> = {
+  "--heat": "oklch(0.68 0.2 42)",
+  "--heat-hover": "oklch(0.625 0.19 42)",
+  "--graphite": "oklch(0.265 0.008 55)",
+  "--paper": "oklch(0.985 0.004 65)",
+  "--forest": "oklch(0.725 0.173 149.1)",
+  "--bluetron": "oklch(0.58 0.223 262.6)",
+  "--honey": "oklch(0.806 0.152 85.4)",
+  "--crimson": "oklch(0.575 0.22 29.8)",
+  "--amethyst": "oklch(0.624 0.223 292.4)",
+  "--heat-text": "oklch(0.52 0.15 44)",
+  "--forest-text": "oklch(0.53 0.149 149.1)",
+  "--honey-text": "oklch(0.55 0.113 85.4)",
+  "--bluetron-text": "oklch(0.56 0.223 262.6)",
+  "--amethyst-text": "oklch(0.57 0.223 292.4)",
+  "--background": "oklch(0.985 0.004 65)",
+  "--foreground": "oklch(0.255 0.008 55)",
+  "--card": "oklch(0.998 0.002 65)",
+  "--muted": "oklch(0.964 0.006 65)",
+  "--muted-foreground": "oklch(0.522 0.012 58)",
+  "--accent": "oklch(0.968 0.008 60)",
+  "--border": "oklch(0.922 0.007 65)",
+  "--input": "oklch(0.905 0.008 65)",
+  "--primary": "oklch(0.55 0.175 42)",
+  "--secondary": "oklch(0.964 0.006 65)",
+  "--destructive": "oklch(0.575 0.22 29.8)",
+  "--ring": "oklch(0.68 0.2 42)",
+};
+const OKLCH_DARK: Record<string, string> = {
+  ...OKLCH_LIGHT,
+  "--background": "oklch(0.215 0.006 55)",
+  "--foreground": "oklch(0.95 0.003 70)",
+  "--card": "oklch(0.25 0.007 55)",
+  "--muted": "oklch(0.29 0.006 55)",
+  "--muted-foreground": "oklch(0.72 0.006 60)",
+  "--accent": "oklch(0.31 0.008 55)",
+  "--border": "oklch(0.31 0.006 55)",
+  "--input": "oklch(0.325 0.007 55)",
+  "--secondary": "oklch(0.29 0.006 55)",
+  "--destructive": "oklch(0.653 0.196 30.3)",
+  "--crimson": "oklch(0.635 0.22 29.8)",
+  "--heat-text": "oklch(0.74 0.16 44)",
+  "--forest-text": "oklch(0.6 0.169 149.1)",
+  "--honey-text": "oklch(0.615 0.126 85.4)",
+  "--bluetron-text": "oklch(0.62 0.205 262.6)",
+  "--amethyst-text": "oklch(0.635 0.216 292.4)",
+};
+
 const RADII = [
   ["sm", "--radius-sm", "4px"],
   ["md", "--radius-md", "6px"],
@@ -181,12 +231,17 @@ function Swatch({
   name,
   note,
   text,
+  dark,
 }: {
   v: Record<string, string>;
   name: string;
   note?: string;
   text?: boolean;
+  dark?: boolean;
 }) {
+  // #51: string oklch() autorada como valor principal (browser resolvia p/ lab() truncado)
+  const authored = (dark ? OKLCH_DARK : OKLCH_LIGHT)[name];
+  const computed = v[name];
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       {text ? (
@@ -200,7 +255,12 @@ function Swatch({
       )}
       <div className="border-t border-border px-3 py-2">
         <p className="truncate font-mono text-[11px] font-medium">{name}</p>
-        <p className="truncate font-mono text-[10px] text-muted-foreground">{v[name] || "—"}</p>
+        <p
+          className="truncate font-mono text-[10px] text-muted-foreground"
+          title={authored || computed || "—"}
+        >
+          {authored || computed || "—"}
+        </p>
         {note && <p className="mt-1 text-[10px] leading-snug text-muted-foreground">{note}</p>}
       </div>
     </div>
@@ -476,7 +536,7 @@ export default function DesignPage() {
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {BRAND.map(([name, note]) => (
-                <Swatch key={name} v={v} name={name} note={note} />
+                <Swatch key={name} v={v} name={name} note={note} dark={dark} />
               ))}
             </div>
 
@@ -485,7 +545,7 @@ export default function DesignPage() {
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               {SEM_VIVID.map(([name, note]) => (
-                <Swatch key={name} v={v} name={name} note={note} />
+                <Swatch key={name} v={v} name={name} note={note} dark={dark} />
               ))}
             </div>
 
@@ -494,24 +554,24 @@ export default function DesignPage() {
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {SEM_TEXT.map(([name, note]) => (
-                <Swatch key={name} v={v} name={name} note={note} text />
+                <Swatch key={name} v={v} name={name} note={note} text dark={dark} />
               ))}
             </div>
 
             <p className="mb-4 mt-8 text-[13px] text-muted-foreground">Slots shadcn (superfícies & texto).</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
               {SLOTS.map(([name, note]) => (
-                <Swatch key={name} v={v} name={name} note={note} />
+                <Swatch key={name} v={v} name={name} note={note} dark={dark} />
               ))}
             </div>
 
             <p className="mb-4 mt-8 text-[13px] text-muted-foreground">Charts & sidebar.</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
               {CHARTS.map((name) => (
-                <Swatch key={name} v={v} name={name} />
+                <Swatch key={name} v={v} name={name} dark={dark} />
               ))}
               {SIDEBAR.map(([name, note]) => (
-                <Swatch key={name} v={v} name={name} note={note} />
+                <Swatch key={name} v={v} name={name} note={note} dark={dark} />
               ))}
             </div>
 

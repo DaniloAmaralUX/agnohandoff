@@ -29,9 +29,12 @@ export const STATUS_DOT: Record<string, string> = {
   Treinando: "text-honey-text",
   Pendente: "text-honey-text",
   Aguardando: "text-honey-text",
+  Publicando: "text-honey-text", // #40: dot cinza em deploy — Publicando é transiente
   // Erro / expirado → crimson
   Desconectado: "text-crimson",
   Vencido: "text-crimson",
+  Erro: "text-crimson",     // #32: dot cinza em Financeiro Legado (mcp)
+  Falhou: "text-crimson",   // #40: consistência com deploy
 };
 
 /** Cor semântica do dot de status — reutilizada em todas as telas. */
@@ -42,7 +45,9 @@ export function statusDot(status: string): string {
 /* Chips/avatares tonalizados: fundo vivo (tint) + texto na variante -text
    (WCAG AA). Consumido por bits.tsx (ToneAvatar) e pelas telas via toneMap. */
 export const TONE: Record<string, string> = {
-  heat: "bg-heat/12 text-heat",
+  // #94: heat vivo falha AA em texto pequeno (avatar "So"). --heat-text é o
+  // token calibrado por tema — alinha com os demais tons (bluetron-text etc.).
+  heat: "bg-heat/12 text-heat-text",
   bluetron: "bg-bluetron/12 text-bluetron-text",
   forest: "bg-forest/12 text-forest-text",
   amethyst: "bg-amethyst/12 text-amethyst-text",

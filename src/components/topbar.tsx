@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Search, Bell } from "lucide-react";
 
@@ -19,8 +20,21 @@ function humanize(seg: string) {
 
 export function Topbar() {
   const pathname = usePathname();
-  const seg = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
+  const parts = pathname.split("/").filter(Boolean);
+  const seg = parts[0] ?? "dashboard";
   const label = ROUTE_LABELS[seg] ?? humanize(seg);
+  // #96: em rotas de detalhe (ex.: /agents/sofia), acrescenta o nó atual
+  // não-clicável — o breadcrumb do builder passa a ler "AgnoHub / Agentes / Sofia".
+  const detail = parts[1] ? humanize(parts[1]) : null;
+
+  // #99: exibir "Ctrl K" fora do macOS (padrão Geist/Vercel). Sem hydration
+  // mismatch: começa com o rótulo neutro "⌘K" e ajusta no cliente.
+  const [modKey, setModKey] = useState("⌘K");
+  useEffect(() => {
+    const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+      || /Mac/.test(navigator.userAgent);
+    setModKey(isMac ? "⌘K" : "Ctrl K");
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4">
@@ -31,7 +45,15 @@ export function Topbar() {
         <span className="flex size-4 items-center justify-center rounded bg-heat text-[10px] font-bold text-heat-foreground">A</span>
         <span className="text-muted-foreground">AgnoHub</span>
         <span className="text-border">/</span>
-        <span className="font-medium text-foreground">{label}</span>
+        {detail ? (
+          <>
+            <span className="text-muted-foreground">{label}</span>
+            <span className="text-border">/</span>
+            <span className="font-medium text-foreground">{detail}</span>
+          </>
+        ) : (
+          <span className="font-medium text-foreground">{label}</span>
+        )}
       </nav>
 
       <div className="ml-auto flex items-center gap-1.5">
@@ -43,7 +65,7 @@ export function Topbar() {
           <Search className="size-3.5" />
           <span>Buscar</span>
           <kbd className="ml-4 rounded border border-border bg-muted px-1.5 font-mono text-[10px]">
-            ⌘K
+            {modKey}
           </kbd>
         </button>
         <Button variant="ghost" size="icon" aria-label="Notificações" className="relative text-muted-foreground">

@@ -11,6 +11,7 @@ import {
   Pencil,
   Play,
   TriangleAlert,
+  MessageCircle,
 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
@@ -26,28 +27,23 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/bits";
 import { statusDot, TONE as toneMap } from "@/lib/constants";
-import { useAgents, useToggleAgent } from "@/lib/api/agents";
+import { useAgents } from "@/lib/api/agents";
 
 export default function AgentsPage() {
   const { data: agents = [], isLoading, isError, refetch } = useAgents();
-  const { mutate: toggleAgent, isPending: toggling } = useToggleAgent();
 
   const total = agents.length;
   const isEmpty = !isLoading && !isError && agents.length === 0;
   const published = agents.filter((a) => a.status === "Publicado").length;
   const withMemory = agents.filter((a) => a.memory).length;
-  const toolsList = agents.filter((a) => a.tools !== undefined);
-  const avgTools = toolsList.length
-    ? (
-        toolsList.reduce((s, a) => s + (a.tools ?? 0), 0) / toolsList.length
-      ).toFixed(1)
-    : "—";
 
+  // #98: 4o slot passa a ser um sinal OPERACIONAL (conecta Agentes a Operar),
+  // não "Média de tools" — métrica sem contexto na lista.
   const stats = [
     { label: "Agentes", value: String(total), hint: "no projeto", icon: Bot },
     { label: "Publicados", value: String(published), hint: "em produção", icon: BadgeCheck },
     { label: "Com memória", value: String(withMemory), hint: "contexto persistente", icon: BrainCircuit },
-    { label: "Média de tools", value: avgTools, hint: "por agente", icon: Wrench },
+    { label: "Conversas hoje", value: "42", hint: "atendidas por agentes", icon: MessageCircle },
   ];
 
   return (
@@ -128,26 +124,15 @@ export default function AgentsPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <p className="truncate text-sm font-semibold">{a.name}</p>
-                    {a.status === "Publicado" || a.status === "Rascunho" ? (
-                      <button
-                        type="button"
-                        disabled={toggling}
-                        onClick={() => toggleAgent({ id: a.id, publish: a.status !== "Publicado" })}
-                        title={a.status === "Publicado" ? "Mover para rascunho" : "Publicar"}
-                        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] transition-colors hover:bg-accent disabled:opacity-60"
-                      >
-                        <Circle className={`size-2 fill-current ${statusDot(a.status)}`} />
-                        {a.status}
-                      </button>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="shrink-0 gap-1 border-border text-[11px] font-normal"
-                      >
-                        <Circle className={`size-2 fill-current ${statusDot(a.status)}`} />
-                        {a.status}
-                      </Badge>
-                    )}
+                    {/* #19: badge SEM affordance de toggle — publicar/despublicar
+                        vive dentro do builder, com confirmação. Aqui é só sinal. */}
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 gap-1 border-border text-[11px] font-normal"
+                    >
+                      <Circle className={`size-2 fill-current ${statusDot(a.status)}`} />
+                      {a.status}
+                    </Badge>
                   </div>
                   <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
                     {a.role || "—"}

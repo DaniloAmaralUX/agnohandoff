@@ -28,9 +28,9 @@ import {
 } from "@/components/ui/table";
 import {
   agents,
+  analyticsMetrics,
   channelSplit,
   conversationSeries,
-  metrics,
 } from "@/lib/data";
 
 // Uso derivado por agente (mock plausível — clínica Vitalmed).
@@ -92,7 +92,8 @@ export default function AnalyticsPage() {
 
       {/* ── Métricas ─────────────────────────────────────────────── */}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {metrics.map((m) => (
+        {/* #84 #8: KPIs específicos de analytics ("no período"), sem repetir dashboard. */}
+        {analyticsMetrics.map((m) => (
           <Card key={m.label} className="gap-0 py-4">
             <CardContent className="px-4">
               <p className="text-[13px] text-muted-foreground">{m.label}</p>

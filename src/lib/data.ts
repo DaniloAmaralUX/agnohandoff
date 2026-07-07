@@ -131,6 +131,17 @@ export const metrics: Metric[] = [
   { label: "Tokens (mês)", value: "152K", delta: "7,6% do limite", trend: "up", hint: "plano Pro · 2M" },
 ];
 
+// #84: analytics repetia 4 KPIs do dashboard. Aqui KPIs próprios da tela —
+// leitura de performance (latência, custo, handoff) e não sanidade diária.
+// #8: labels sem sufixo temporal ("7d"/"mês") — os cards reagem ao seletor
+// global de período; o rótulo diz "no período" implicitamente via CardDescription.
+export const analyticsMetrics: Metric[] = [
+  { label: "Latência p95", value: "1,4s", delta: "-120ms", trend: "up", hint: "no período" },
+  { label: "Custo estimado", value: "R$ 486", delta: "+8,2%", trend: "down", hint: "no período" },
+  { label: "Handoff humano", value: "13%", delta: "-2,1pp", trend: "up", hint: "conversas escaladas" },
+  { label: "Tokens consumidos", value: "152K", delta: "7,6% do limite", trend: "up", hint: "plano Pro · 2M" },
+];
+
 // Série de conversas por dia (últimos 14 dias) — para o gráfico.
 export const conversationSeries = [
   148, 132, 176, 189, 165, 98, 74, 156, 203, 221, 198, 187, 142, 168,

@@ -401,10 +401,12 @@
 .bg-heat { background-color: var(--primary); }
 .bg-heat:hover { background-color: var(--heat-hover); }
 
-/* Tint sutil de heat p/ realces (badges, seleção) */
+/* Tint sutil de heat p/ realces (badges, seleção)
+   #13/#68: no light usamos --heat-text (0.52 L) p/ garantir AA em textos <14px.
+   Fundo continua vivo (10% do --heat). */
 .heat-tint {
   background-color: color-mix(in srgb, var(--heat) 10%, transparent);
-  color: var(--heat);
+  color: var(--heat-text);
 }
 .dark .heat-tint {
   background-color: color-mix(in srgb, var(--heat) 18%, transparent);
