@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
   Paperclip,
@@ -41,34 +41,54 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { playgroundThread } from "@/lib/data";
+import { USE_MOCK } from "@/lib/config";
+import { useChatSession } from "@/lib/api/chat";
+import { useAgents } from "@/lib/api/agents";
+import { useActiveProject } from "@/lib/project-context";
 import { initials } from "@/lib/utils";
+import { TriangleAlert } from "lucide-react";
 
-// Agentes selecionáveis no seletor do topo (mesmo tom do data.ts).
-const playgroundAgents = [
-  { name: "Sofia", role: "Triagem de sintomas", project: "Sofia" },
-  { name: "Dr. Agenda", role: "Agendamento de consultas", project: "Sofia" },
-  { name: "Léo", role: "Qualificação de leads", project: "Léo" },
-];
-
-// Linhas de debug (mock) — apenas leitura.
-// #101: valores em text-foreground (labels muted) — espelha Temperatura/Session ID.
-const debugRows = [
-  { label: "Tokens (entrada)", value: "1.842", tone: "text-foreground" },
-  { label: "Tokens (saída)", value: "634", tone: "text-foreground" },
-  // NBSP antes da unidade — número não separa do "s" em quebra de linha.
-  { label: "Latência", value: "1,8 s", tone: "text-foreground" },
-];
+const fmt = (n: number) => n.toLocaleString("pt-BR");
 
 export default function PlaygroundPage() {
   const [input, setInput] = useState("");
-  const [agent, setAgent] = useState("Sofia");
+  const [agentName, setAgentName] = useState<string | null>(null);
   const [model, setModel] = useState("opus");
   const [temperature, setTemperature] = useState(0.7);
   const [memory, setMemory] = useState(true);
   const [tools, setTools] = useState(true);
 
+  // Agentes reais do projeto ativo (mock na demo) + sessão de chat com
+  // streaming token a token (SSE em modo API; simulado na demo).
+  const { data: agentsData } = useAgents();
+  const { project } = useActiveProject();
+  const chat = useChatSession();
+  const agentsList = agentsData ?? [];
   const activeAgent =
-    playgroundAgents.find((a) => a.name === agent) ?? playgroundAgents[0];
+    agentsList.find((a) => a.name === agentName) ??
+    agentsList[0] ?? { name: "Agente", role: "" };
+
+  // Demo: a transcrição-exemplo abre a conversa; o que você envia continua dela.
+  const thread = [...(USE_MOCK ? playgroundThread : []), ...chat.messages];
+
+  // Auto-scroll: o token mais novo nasce visível (respeita reduced-motion).
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    threadEndRef.current?.scrollIntoView({
+      block: "end",
+      behavior: reduce ? "auto" : "smooth",
+    });
+  }, [thread.length, chat.isStreaming]);
+
+  const onSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || chat.isStreaming) return;
+    void chat.send(input);
+    setInput("");
+  };
 
   return (
     <PageShell>
@@ -76,7 +96,12 @@ export default function PlaygroundPage() {
         title="Playground"
         subtitle="Converse com seus agentes e ajuste os parâmetros antes de publicar."
       >
-        <Button variant="outline" size="sm" className="text-muted-foreground">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-muted-foreground"
+          onClick={() => chat.reset()}
+        >
           <RotateCcw data-icon="inline-start" />
           Limpar sessão
         </Button>
@@ -120,10 +145,10 @@ export default function PlaygroundPage() {
                   <DropdownMenuContent align="start" className="w-56">
                     <DropdownMenuLabel>Trocar de agente</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {playgroundAgents.map((a) => (
+                    {agentsList.map((a) => (
                       <DropdownMenuItem
-                        key={a.name}
-                        onClick={() => setAgent(a.name)}
+                        key={a.id}
+                        onClick={() => setAgentName(a.name)}
                         className="flex-col items-start gap-0.5"
                       >
                         <span className="text-sm font-medium">{a.name}</span>
@@ -140,13 +165,13 @@ export default function PlaygroundPage() {
                   className="gap-1 border-border text-[11px] font-normal"
                 >
                   <Bot className="size-3 text-muted-foreground" />
-                  Projeto {activeAgent.project}
+                  Projeto {project?.name ?? "—"}
                 </Badge>
               </div>
 
               {/* Mensagens */}
               <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5">
-                {playgroundThread.map((msg, i) =>
+                {thread.map((msg, i) =>
                   msg.role === "user" ? (
                     <div key={i} className="flex justify-end">
                       <div className="max-w-[78%] space-y-1">
@@ -188,17 +213,25 @@ export default function PlaygroundPage() {
                     </div>
                   )
                 )}
+                {/* Cursor de streaming: a resposta está nascendo. */}
+                {chat.isStreaming && (
+                  <div className="flex items-center gap-2 pl-9 font-mono text-[11px] text-muted-foreground">
+                    <span className="inline-block size-1.5 animate-pulse rounded-full bg-heat" />
+                    {activeAgent.name} está respondendo…
+                  </div>
+                )}
+                {chat.error && (
+                  <div className="flex items-center gap-2 rounded-md border border-crimson/30 bg-crimson/5 px-3 py-2 text-[13px]">
+                    <TriangleAlert className="size-4 shrink-0 text-crimson" />
+                    {chat.error}
+                  </div>
+                )}
+                <div ref={threadEndRef} />
               </div>
 
               {/* Composer */}
               <div className="border-t border-border p-3">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setInput("");
-                  }}
-                  className="flex items-end gap-2"
-                >
+                <form onSubmit={onSend} className="flex items-end gap-2">
                   <Button
                     type="button"
                     variant="ghost"
@@ -226,6 +259,7 @@ export default function PlaygroundPage() {
                   <Button
                     type="submit"
                     size="icon"
+                    disabled={chat.isStreaming || input.trim() === ""}
                     className="size-9 shrink-0 bg-heat text-heat-foreground hover:bg-heat-hover"
                   >
                     <ArrowUp className="size-4" />
@@ -302,7 +336,7 @@ export default function PlaygroundPage() {
                     </Label>
                     <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-2.5 py-1.5">
                       <span className="truncate font-mono text-[12px] text-foreground">
-                        sess_8f3a1c9d24
+                        {chat.sessionId}
                       </span>
                       <Circle className="size-2 shrink-0 fill-current text-forest-text" />
                     </div>
@@ -337,14 +371,23 @@ export default function PlaygroundPage() {
                   <CardTitle className="text-base">Debug</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2.5">
-                  {debugRows.map((row) => (
+                  {/* Valores reais da última troca — "—" antes da primeira. */}
+                  {[
+                    { label: "Tokens (entrada)", value: chat.debug?.inputTokens },
+                    { label: "Tokens (saída)", value: chat.debug?.outputTokens },
+                    {
+                      label: "Latência",
+                      value: chat.debug?.latencyMs,
+                      suffix: " ms",
+                    },
+                  ].map((row) => (
                     <div
                       key={row.label}
                       className="flex items-center justify-between text-[13px]"
                     >
                       <span className="text-muted-foreground">{row.label}</span>
-                      <span className={`font-mono tabular ${row.tone}`}>
-                        {row.value}
+                      <span className="font-mono tabular text-foreground">
+                        {row.value != null ? `${fmt(row.value)}${row.suffix ?? ""}` : "—"}
                       </span>
                     </div>
                   ))}
@@ -354,8 +397,20 @@ export default function PlaygroundPage() {
                       variant="outline"
                       className="gap-1 border-border text-[11px] font-normal"
                     >
-                      <Circle className="size-2 fill-current text-forest-text" />
-                      OK · 200
+                      <Circle
+                        className={`size-2 fill-current ${
+                          chat.debug == null
+                            ? "text-muted-foreground"
+                            : chat.debug.ok
+                              ? "text-forest-text"
+                              : "text-crimson"
+                        }`}
+                      />
+                      {chat.debug == null
+                        ? "Aguardando"
+                        : chat.debug.ok
+                          ? "OK · 200"
+                          : "Erro"}
                     </Badge>
                   </div>
                 </CardContent>
