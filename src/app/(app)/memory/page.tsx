@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Database,
@@ -41,6 +41,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { memoryStrategies, memoryConfig, memoryStats } from "@/lib/data";
+import { USE_MOCK } from "@/lib/config";
+import { API_MEMORY_STRATEGIES, useUpdateProjectMemory } from "@/lib/api/memory";
+import { useActiveProject } from "@/lib/project-context";
+
+/* Em modo API mostramos as estratégias REAIS do backend (hybrid, palace_only,
+   db_only, none); as conceituais (buffer/resumo/vetorial) ficam na demo. */
+const STRATEGY_OPTIONS = USE_MOCK ? memoryStrategies : API_MEMORY_STRATEGIES;
 
 /* Métricas do topo — mesmo estilo das do dashboard (número grande, tabular). */
 const stats = [
@@ -66,26 +73,52 @@ const stats = [
 
 // Chave da estratégia inicialmente selecionada — casa o texto de memoryConfig
 // com a lista de estratégias (mesma heurística de antes, agora só na semente).
-const initialStrategyKey =
-  memoryStrategies.find((s) =>
-    memoryConfig.strategy
-      .toLowerCase()
-      .includes(s.name.split(" ")[0].toLowerCase())
-  )?.key ?? memoryStrategies[0].key;
+const initialStrategyKey = USE_MOCK
+  ? memoryStrategies.find((s) =>
+      memoryConfig.strategy
+        .toLowerCase()
+        .includes(s.name.split(" ")[0].toLowerCase())
+    )?.key ?? memoryStrategies[0].key
+  : "hybrid";
 
 export default function MemoryPage() {
-  // Estado local controlado — o mock é read-only, então persistimos só na sessão.
-  const [strategyKey, setStrategyKey] = useState(initialStrategyKey);
+  // Estado local controlado; em modo API os valores iniciais vêm do projeto
+  // ativo e o Salvar persiste via PATCH /manage/projects/{id}.
+  const [strategyKey, setStrategyKey] = useState<string>(initialStrategyKey);
   const [longMemory, setLongMemory] = useState(memoryConfig.longMemory);
   const [contextWindow, setContextWindow] = useState(String(memoryConfig.window));
   const [retention, setRetention] = useState(memoryConfig.retention);
   const [embeddings, setEmbeddings] = useState(memoryConfig.embeddings);
 
-  const selectedStrategy =
-    memoryStrategies.find((s) => s.key === strategyKey) ?? memoryStrategies[0];
+  const { project } = useActiveProject();
+  const updateMemory = useUpdateProjectMemory();
 
-  const saveContext = () =>
-    toast.success("Configurações de memória salvas.");
+  // Hidrata o form quando o projeto ativo muda (só em modo API).
+  useEffect(() => {
+    if (USE_MOCK || !project) return;
+    if (project.memoryStrategy) {
+      setStrategyKey(project.memoryStrategy);
+      setLongMemory(project.memoryStrategy !== "none");
+    }
+    if (project.contextWindow != null) {
+      setContextWindow(String(project.contextWindow));
+    }
+  }, [project]);
+
+  const selectedStrategy =
+    STRATEGY_OPTIONS.find((s) => s.key === strategyKey) ?? STRATEGY_OPTIONS[0];
+
+  const saveContext = () => {
+    if (USE_MOCK) {
+      toast.success("Configurações de memória salvas.");
+      return;
+    }
+    updateMemory.mutate({
+      // Toggle desligado = sem memória longa, independente da estratégia.
+      memoryStrategy: longMemory ? strategyKey : "none",
+      contextWindow: Number(contextWindow) || 10,
+    });
+  };
 
   return (
     <PageShell>
@@ -97,9 +130,10 @@ export default function MemoryPage() {
           size="sm"
           className="bg-heat text-heat-foreground hover:bg-heat-hover"
           onClick={saveContext}
+          disabled={updateMemory.isPending}
         >
           <Save data-icon="inline-start" />
-          Salvar
+          {updateMemory.isPending ? "Salvando…" : "Salvar"}
         </Button>
       </PageHeader>
 
@@ -116,7 +150,10 @@ export default function MemoryPage() {
                 {s.value}
               </p>
               <p className="mt-1.5 text-[12px] text-muted-foreground">
+                {/* O backend ainda não expõe métricas de memória (gap no
+                    HANDOFF) — em modo API os números são ilustrativos. */}
                 {s.hint}
+                {!USE_MOCK && " · estimativa"}
               </p>
             </CardContent>
           </Card>
@@ -138,7 +175,7 @@ export default function MemoryPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2.5">
-            {memoryStrategies.map((strategy) => {
+            {STRATEGY_OPTIONS.map((strategy) => {
               const selected = strategy.key === strategyKey;
               return (
                 <button
@@ -283,7 +320,7 @@ export default function MemoryPage() {
 
           {/* CTA único no header salva a página inteira; rodapé mantém apenas o escopo. */}
           <div className="flex items-center border-t border-border px-6 py-4">
-            <MonoLabel>por projeto · Sofia</MonoLabel>
+            <MonoLabel>por projeto · {project?.name ?? "Sofia"}</MonoLabel>
           </div>
         </Card>
       </div>

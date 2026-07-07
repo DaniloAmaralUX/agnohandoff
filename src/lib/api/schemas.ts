@@ -38,6 +38,9 @@ export const projectSchema = z.object({
   description: z.string().nullish(),
   status: z.string().nullish(),
   workspace_id: z.string().nullish(),
+  memory_strategy: z.string().nullish(),
+  context_strategy: z.string().nullish(),
+  context_window_size: z.number().nullish(),
 });
 export type ApiProject = z.infer<typeof projectSchema>;
 

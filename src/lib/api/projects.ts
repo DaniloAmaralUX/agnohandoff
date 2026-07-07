@@ -24,6 +24,9 @@ export type ProjectView = {
   workspaceId?: string;
   agents?: number;
   channels?: number;
+  /** Config de memória (só em modo API) — consumida pela tela /memory. */
+  memoryStrategy?: string;
+  contextWindow?: number;
 };
 
 const STATUS_PT: Record<string, string> = {
@@ -43,6 +46,8 @@ export function mapApiProject(p: ApiProject): ProjectView {
     status: STATUS_PT[status] ?? status,
     workspace: (p.workspace_id ?? "—").slice(0, 8),
     workspaceId: p.workspace_id ?? undefined,
+    memoryStrategy: p.memory_strategy ?? undefined,
+    contextWindow: p.context_window_size ?? undefined,
   };
 }
 
