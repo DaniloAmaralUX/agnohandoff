@@ -34,6 +34,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatCard } from "@/components/bits";
+import { USE_MOCK } from "@/lib/config";
+import { shortTokens } from "@/lib/plan-data";
+import {
+  useBillingBalance,
+  useBillingPlans,
+  usePurchasePack,
+  useSubscribePlan,
+  type BillingPlanView,
+} from "@/lib/api/billing";
 
 /* ── Dados locais (mock, tom Vitalmed) ──────────────────────────── */
 
@@ -188,28 +197,88 @@ function txDot(type: Transaction["type"]) {
   return "text-muted-foreground";
 }
 
+/* Packs REAIS do backend (package_id do POST /billing/purchase) — em modo
+   API o preço é definido na cobrança (a resposta traz o Pix). */
+const API_PACKS: CreditPack[] = [
+  { id: "pack_500k", tokens: "500K tokens", amount: 500_000, price: "Pix", perThousand: "na finalização", note: "Cobre picos pontuais." },
+  { id: "pack_2m", tokens: "2M tokens", amount: 2_000_000, price: "Pix", perThousand: "na finalização", note: "Uso mensal típico.", recommended: true },
+  { id: "pack_10m", tokens: "10M tokens", amount: 10_000_000, price: "Pix", perThousand: "na finalização", note: "Volume alto." },
+  { id: "pack_50m", tokens: "50M tokens", amount: 50_000_000, price: "Pix", perThousand: "na finalização", note: "Escala e sazonalidade." },
+];
+
+/** "18 dias" a partir de uma data ISO futura; "—" sem data. */
+function daysUntil(iso?: string): string {
+  if (!iso) return "—";
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "—";
+  const d = Math.max(0, Math.ceil((t - Date.now()) / 86_400_000));
+  return `${d} ${d === 1 ? "dia" : "dias"}`;
+}
+
+/** Card rico a partir do plano da API (features derivadas dos limites). */
+function planToCard(p: BillingPlanView, currentPlan?: string): PlanCard {
+  const lim = (n: number, singular: string, plural: string) =>
+    n <= 0 ? `${plural} ilimitados` : `${fmt(n)} ${n === 1 ? singular : plural}`;
+  return {
+    id: p.id,
+    name: p.name,
+    price: p.priceBrl > 0 ? `R$ ${fmt(p.priceBrl)}` : "R$ 0",
+    period: "/mês",
+    tagline: "",
+    features: [
+      lim(p.maxProjects, "projeto", "projetos"),
+      lim(p.maxAgents, "agente por projeto", "agentes por projeto"),
+      `${shortTokens(p.monthlyCredits)} tokens / mês`,
+      p.byok ? "BYOK — use suas próprias chaves" : "Chaves LLM da plataforma",
+    ],
+    current: currentPlan != null && p.name.toLowerCase() === currentPlan.toLowerCase(),
+    cta: currentPlan != null && p.name.toLowerCase() === currentPlan.toLowerCase() ? "Plano atual" : "Assinar",
+  };
+}
+
 export default function BillingPage() {
-  // Estado local semeado dos valores-base — a compra de créditos incrementa
-  // o saldo disponível e o total para o mock refletir a ação na hora.
-  const [available, setAvailable] = useState(creditSeed.available);
-  const [total, setTotal] = useState(creditSeed.total);
+  // Demo: estado local que a compra simulada incrementa na hora.
+  const [mockAvailable, setMockAvailable] = useState(creditSeed.available);
+  const [mockTotal, setMockTotal] = useState(creditSeed.total);
   const [tab, setTab] = useState("planos");
 
-  const usedPct = Math.round((creditSeed.used / total) * 1000) / 10;
+  // Modo API: saldo real (X-Org-Id), planos reais e mutações de cobrança.
+  const { data: balance } = useBillingBalance();
+  const { data: apiPlans } = useBillingPlans();
+  const purchase = usePurchasePack();
+  const subscribe = useSubscribePlan();
+
+  const available = USE_MOCK ? mockAvailable : balance?.available ?? 0;
+  const total = USE_MOCK ? mockTotal : balance?.total ?? 0;
+  const used = USE_MOCK ? creditSeed.used : balance?.used ?? 0;
+  const usedPct = USE_MOCK
+    ? Math.round((creditSeed.used / total) * 1000) / 10
+    : balance?.usagePct ?? 0;
+  const renewsIn = USE_MOCK ? creditSeed.renewsIn : daysUntil(balance?.periodEnd);
+  const planName = balance?.plan ?? "Pro";
+
+  const planCards = USE_MOCK
+    ? plans
+    : (apiPlans ?? []).map((p) => planToCard(p, balance?.plan));
+  const packs = USE_MOCK ? creditPacks : API_PACKS;
 
   const creditMetrics = [
     { label: "Créditos disponíveis", value: fmt(available), hint: "tokens" },
-    { label: "Usados no período", value: fmt(creditSeed.used), hint: "tokens" },
-    { label: "Total do período", value: fmt(total), hint: "tokens · plano Pro" },
-    { label: "Renova em", value: creditSeed.renewsIn, hint: "próximo ciclo" },
+    { label: "Usados no período", value: fmt(used), hint: "tokens" },
+    { label: "Total do período", value: fmt(total), hint: `tokens · plano ${planName}` },
+    { label: "Renova em", value: renewsIn, hint: "próximo ciclo" },
   ];
 
   function handleBuyPack(pack: CreditPack) {
-    setAvailable((n) => n + pack.amount);
-    setTotal((n) => n + pack.amount);
-    toast.success("Compra simulada — créditos adicionados.", {
-      description: `${pack.tokens} entraram no seu saldo.`,
-    });
+    if (USE_MOCK) {
+      setMockAvailable((n) => n + pack.amount);
+      setMockTotal((n) => n + pack.amount);
+      toast.success("Compra simulada — créditos adicionados.", {
+        description: `${pack.tokens} entraram no seu saldo.`,
+      });
+      return;
+    }
+    purchase.mutate({ packageId: pack.id });
   }
 
   function handlePlanCta(plan: PlanCard) {
@@ -218,9 +287,13 @@ export default function BillingPage() {
       toast.success("Pedido enviado — nosso time comercial vai te chamar.");
       return;
     }
-    toast.success(`Plano ${plan.name} selecionado.`, {
-      description: "Mudança de plano simulada neste protótipo.",
-    });
+    if (USE_MOCK) {
+      toast.success(`Plano ${plan.name} selecionado.`, {
+        description: "Mudança de plano simulada neste protótipo.",
+      });
+      return;
+    }
+    subscribe.mutate({ planId: plan.id });
   }
 
   function handleExport() {
@@ -262,13 +335,13 @@ export default function BillingPage() {
           <div className="flex items-center justify-between text-[13px]">
             <span className="text-foreground">Uso do período</span>
             <span className="font-mono tabular text-muted-foreground">
-              {fmt(creditSeed.used)} / {fmt(total)} tokens ·{" "}
+              {fmt(used)} / {fmt(total)} tokens ·{" "}
               <span className="text-foreground">{String(usedPct).replace(".", ",")}%</span>
             </span>
           </div>
           <Progress value={usedPct} className="mt-2.5 h-2" />
           <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-            Renova em {creditSeed.renewsIn} · restam {fmt(available)} tokens
+            Renova em {renewsIn} · restam {fmt(available)} tokens
           </p>
         </CardContent>
       </Card>
@@ -284,7 +357,7 @@ export default function BillingPage() {
         {/* ── Planos ─────────────────────────────────────────────── */}
         <TabsContent value="planos" className="mt-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {plans.map((p) => (
+            {planCards.map((p) => (
               <Card
                 key={p.id}
                 className={`relative flex flex-col ${
@@ -318,7 +391,7 @@ export default function BillingPage() {
                       </span>
                     )}
                   </div>
-                  <CardDescription>{p.tagline}</CardDescription>
+                  {p.tagline && <CardDescription>{p.tagline}</CardDescription>}
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col">
                   <ul className="flex-1 space-y-2">
@@ -351,7 +424,7 @@ export default function BillingPage() {
         {/* ── Comprar créditos ───────────────────────────────────── */}
         <TabsContent value="comprar" className="mt-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {creditPacks.map((pk) => (
+            {packs.map((pk) => (
               <Card
                 key={pk.id}
                 className={`relative flex flex-col ${
@@ -423,6 +496,12 @@ export default function BillingPage() {
               </Button>
             </CardHeader>
             <CardContent>
+              {!USE_MOCK && (
+                <p className="mb-3 rounded-md border border-border bg-muted/40 px-3 py-2 font-mono text-[11px] text-muted-foreground">
+                  O backend ainda não expõe o histórico de transações (gap no
+                  HANDOFF) — os itens abaixo são ilustrativos.
+                </p>
+              )}
               <Table>
                 <TableHeader>
                   <TableRow>
