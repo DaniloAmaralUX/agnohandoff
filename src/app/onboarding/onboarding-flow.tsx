@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Copy, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { onboardingSteps } from "@/lib/data";
+import { USE_MOCK } from "@/lib/config";
+import { useRegister, type RegisteredView } from "@/lib/api/register";
 import { cn } from "@/lib/utils";
 
 type Draft = {
   orgName: string;
   slug: string;
   email: string;
+  password: string;
   workspace: string;
   agentName: string;
   agentRole: string;
@@ -42,6 +45,7 @@ const emptyDraft: Draft = {
   orgName: "",
   slug: "",
   email: "",
+  password: "",
   workspace: "",
   agentName: "",
   agentRole: "",
@@ -53,16 +57,30 @@ export function OnboardingFlow() {
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [error, setError] = useState<string | null>(null);
+  // Cadastro concluído (modo API): guarda o retorno p/ exibir a key UMA vez.
+  const [created, setCreated] = useState<RegisteredView | null>(null);
+  const register = useRegister();
   const total = onboardingSteps.length;
   const current = onboardingSteps[step - 1];
 
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
 
-  // Validação mínima por passo (mock): só o passo 1 exige o nome da org.
+  // Validação mínima por passo. Em modo API o passo 1 vira o cadastro real —
+  // e-mail e senha seguem os mínimos do backend (5 e 8 caracteres).
   function validate(): boolean {
-    if (step === 1 && draft.orgName.trim().length < 2) {
-      setError("Informe o nome da organização (mín. 2 caracteres).");
-      return false;
+    if (step === 1) {
+      if (draft.orgName.trim().length < 2) {
+        setError("Informe o nome da organização (mín. 2 caracteres).");
+        return false;
+      }
+      if (!USE_MOCK && draft.email.trim().length < 5) {
+        setError("Informe um e-mail válido.");
+        return false;
+      }
+      if (!USE_MOCK && draft.password.length < 8) {
+        setError("A senha precisa de ao menos 8 caracteres.");
+        return false;
+      }
     }
     setError(null);
     return true;
@@ -74,15 +92,92 @@ export function OnboardingFlow() {
       setStep((s) => s + 1);
       return;
     }
-    toast.success("Tudo pronto!", {
-      description: "Sua organização foi criada. Bem-vindo à AgnoHub.",
-    });
-    router.push("/dashboard");
+    if (USE_MOCK) {
+      toast.success("Tudo pronto!", {
+        description: "Sua organização foi criada. Bem-vindo à AgnoHub.",
+      });
+      router.push("/dashboard");
+      return;
+    }
+    register.mutate(
+      {
+        name: draft.orgName.trim(),
+        email: draft.email.trim(),
+        password: draft.password,
+        orgName: draft.orgName.trim(),
+      },
+      {
+        onSuccess: (result) => setCreated(result),
+        onError: (err) => {
+          const conflict =
+            err instanceof Error && "status" in err && (err as { status: number }).status === 409;
+          toast.error(
+            conflict
+              ? "Este e-mail já tem uma organização — faça login."
+              : "Não foi possível criar a organização. Tente de novo.",
+          );
+          setStep(1);
+        },
+      },
+    );
   }
 
   function back() {
     setError(null);
     setStep((s) => Math.max(1, s - 1));
+  }
+
+  // ── Sucesso (modo API): a chave aparece UMA única vez ──────────────────
+  if (created) {
+    return (
+      <div className="mx-auto mt-16 max-w-[560px]">
+        <div className="animate-rise overflow-hidden rounded-xl border border-border bg-card shadow-[0_24px_80px_-32px_rgba(0,0,0,0.22)]">
+          <div className="border-b border-border px-6 pb-5 pt-6">
+            <div className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-md heat-tint">
+                <KeyRound className="size-4 text-heat" />
+              </span>
+              <h1 className="text-xl font-semibold tracking-tight">
+                {created.orgName} está no ar
+              </h1>
+            </div>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+              Guarde sua API key — ela é exibida{" "}
+              <span className="font-medium text-foreground">só esta vez</span>. Você
+              já está autenticado neste navegador.
+            </p>
+          </div>
+          <div className="px-6 py-6">
+            <div className="flex flex-col gap-2 rounded-md border border-heat/40 bg-heat/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <code className="min-w-0 truncate font-mono text-[13px] tabular text-foreground">
+                {created.apiKey}
+              </code>
+              <Button
+                size="sm"
+                className="h-8 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  navigator.clipboard?.writeText(created.apiKey).catch(() => {});
+                  toast.success("Chave copiada.");
+                }}
+              >
+                <Copy data-icon="inline-start" />
+                Copiar
+              </Button>
+            </div>
+            <p className="mt-3 text-[12px] text-muted-foreground">
+              Plano <span className="font-medium text-foreground">{created.plan}</span> ·
+              org <span className="font-mono">{created.orgId.slice(0, 8)}</span>
+            </p>
+          </div>
+          <div className="flex justify-end border-t border-border bg-muted/30 px-6 py-4">
+            <Button size="sm" className="h-11 sm:h-8" onClick={() => router.push("/dashboard")}>
+              Ir para o dashboard
+              <ArrowRight data-icon="inline-end" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -192,6 +287,23 @@ export function OnboardingFlow() {
                     Este será o dono da organização e receberá os convites.
                   </FieldDescription>
                 </Field>
+                {/* Senha só no produto real — o backend exige no /auth/register. */}
+                {!USE_MOCK && (
+                  <Field>
+                    <FieldLabel htmlFor="admin-password">Senha</FieldLabel>
+                    <Input
+                      id="admin-password"
+                      type="password"
+                      placeholder="Mínimo 8 caracteres"
+                      autoComplete="new-password"
+                      value={draft.password}
+                      onChange={(e) => set({ password: e.target.value })}
+                    />
+                    <FieldDescription>
+                      Usada para acessar o painel da organização.
+                    </FieldDescription>
+                  </Field>
+                )}
               </>
             )}
 
@@ -275,9 +387,16 @@ export function OnboardingFlow() {
           <Button
             size="sm"
             onClick={next}
+            disabled={register.isPending}
             className="h-11 sm:h-8"
           >
-            {step < total ? "Continuar" : "Ir para o dashboard"}
+            {register.isPending
+              ? "Criando organização…"
+              : step < total
+                ? "Continuar"
+                : USE_MOCK
+                  ? "Ir para o dashboard"
+                  : "Criar organização"}
             <ArrowRight data-icon="inline-end" />
           </Button>
         </div>
