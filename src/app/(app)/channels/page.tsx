@@ -39,8 +39,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Circle } from "lucide-react";
-import { channels as seedChannels, projects, type Channel } from "@/lib/data";
+import { Circle, TriangleAlert } from "lucide-react";
+import { type Channel } from "@/lib/data";
+import { USE_MOCK } from "@/lib/config";
+import { useChannels, useCreateChannel } from "@/lib/api/channels";
+import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "@/lib/api/api-keys";
+import { useProjects } from "@/lib/api/projects";
+import { Skeleton } from "@/components/ui/skeleton";
 import { statusDot } from "@/lib/constants";
 import { FormSheet } from "@/components/form-sheet";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
@@ -53,31 +58,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const typeIcon: Record<Channel["type"], React.ElementType> = {
+const typeIcon: Record<string, React.ElementType> = {
   WhatsApp: MessageCircle,
   "Web Widget": Globe,
   Telegram: Send,
   Instagram: Camera,
+  API: Zap,
 };
 
-const typeTone: Record<Channel["type"], string> = {
+const typeTone: Record<string, string> = {
   WhatsApp: "bg-forest/12 text-forest-text",
   "Web Widget": "bg-bluetron/12 text-bluetron-text",
   Telegram: "bg-amethyst/12 text-amethyst-text",
   Instagram: "bg-honey/15 text-honey-text",
+  API: "bg-graphite/10 text-foreground",
 };
 
 // Rótulo amigável para cada tipo no Select — "Web Widget" é o webhook/site próprio.
-const CHANNEL_TYPES: { value: Channel["type"]; label: string }[] = [
-  { value: "WhatsApp", label: "WhatsApp" },
-  { value: "Instagram", label: "Instagram" },
-  { value: "Web Widget", label: "Web Widget (webhook/site)" },
-  { value: "Telegram", label: "Telegram" },
-];
+// Instagram existe só na demo: o backend fala whatsapp|widget|api|telegram
+// (gap anotado no HANDOFF); em modo API a opção honesta é "API REST".
+const CHANNEL_TYPES: { value: Channel["type"] | "API"; label: string }[] = USE_MOCK
+  ? [
+      { value: "WhatsApp", label: "WhatsApp" },
+      { value: "Instagram", label: "Instagram" },
+      { value: "Web Widget", label: "Web Widget (webhook/site)" },
+      { value: "Telegram", label: "Telegram" },
+    ]
+  : [
+      { value: "WhatsApp", label: "WhatsApp" },
+      { value: "Web Widget", label: "Web Widget (webhook/site)" },
+      { value: "Telegram", label: "Telegram" },
+      { value: "API", label: "API REST" },
+    ];
 
 const newChannelSchema = z.object({
   label: z.string().min(2, "Dê um nome com ao menos 2 caracteres."),
-  type: z.enum(["WhatsApp", "Web Widget", "Telegram", "Instagram"], {
+  type: z.enum(["WhatsApp", "Web Widget", "Telegram", "Instagram", "API"], {
     message: "Escolha um tipo de canal.",
   }),
   project: z.string().min(1, "Escolha um projeto."),
@@ -86,18 +102,26 @@ const newChannelSchema = z.object({
 type NewChannelForm = z.infer<typeof newChannelSchema>;
 
 export default function ChannelsPage() {
-  const [items, setItems] = useState<Channel[]>(seedChannels);
-  // "fullKey" = a chave real (retornada UMA vez pela API); "maskedKey" = o que
-  // fica exibido depois. Quando o usuário fecha o reveal ou navega, só a
-  // versão mascarada permanece — a íntegra é irrecuperável, como um bom
-  // segredo deve ser (pego pela auditoria: o toast prometia "íntegra" mas a UI
-  // já exibia a chave mascarada).
+  const { data, isLoading, isError, refetch } = useChannels();
+  const createChannel = useCreateChannel();
+  const { data: projData } = useProjects();
+  const { data: keys } = useApiKeys();
+  const createKey = useCreateApiKey();
+  const revokeKey = useRevokeApiKey();
+
+  const items = data ?? [];
+  const projectOptions = projData ?? [];
+  const currentKey = (keys ?? []).find((k) => k.active) ?? (keys ?? [])[0];
+
+  // "fullKey" = a chave real (retornada UMA vez pela API); depois só o
+  // preview mascarado permanece — a íntegra é irrecuperável, como um bom
+  // segredo deve ser. Na demo, começa visível para contar essa história.
   const [fullKey, setFullKey] = useState<string | null>(
-    "pk_demo_DEMO_NOT_A_SECRET_0000000000000000",
+    USE_MOCK ? "pk_demo_DEMO_NOT_A_SECRET_0000000000000000" : null,
   );
-  const [maskedKey, setMaskedKey] = useState(
-    "pk_demo_DEMO···0000",
-  );
+  // Preview da chave recém-gerada (sobrepõe a da lista até o refetch).
+  const [newPreview, setNewPreview] = useState<string | null>(null);
+  const maskedKey = newPreview ?? currentKey?.preview ?? "—";
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
   // Confirmação para regenerar a chave — ação destrutiva (revoga a atual).
@@ -108,26 +132,13 @@ export default function ChannelsPage() {
     defaultValues: {
       label: "",
       type: "WhatsApp",
-      project: projects[0]?.name ?? "",
+      project: "",
       detail: "",
     },
   });
 
   const onSubmit = form.handleSubmit((values) => {
-    setItems((prev) => [
-      {
-        id: `ch_${Date.now()}`,
-        type: values.type,
-        label: values.label,
-        project: values.project,
-        status: "Pendente",
-        detail: values.detail?.trim() || "Aguardando configuração",
-      },
-      ...prev,
-    ]);
-    toast.success("Canal adicionado.", {
-      description: "Conclua a configuração para conectá-lo.",
-    });
+    createChannel.mutate(values);
     form.reset();
     setOpen(false);
   });
@@ -147,22 +158,28 @@ export default function ChannelsPage() {
   }
 
   function handleGenerateKey() {
-    // Prefixo "pk_demo" — obviamente-falso p/ não disparar secret-scanning
-    // (formato "sk_live" foi flaggeado no push, mesmo mock).
-    const rand = Math.random().toString(36).slice(2, 34);
-    const full = `pk_demo_${rand}`;
-    setFullKey(full);
-    setMaskedKey(`pk_demo_${rand.slice(0, 4)}···${rand.slice(-4)}`);
-    setCopied(false);
-    toast.success("Nova chave gerada.", {
-      description: "Copie agora — a íntegra some quando você fechar.",
-      action: {
-        label: "Copiar",
-        onClick: () => {
-          navigator.clipboard?.writeText(full).catch(() => {});
+    // "Regenerar" = criar nova + revogar a anterior (o backend não tem PATCH).
+    const prevId = USE_MOCK ? undefined : currentKey?.id;
+    createKey.mutate(
+      { name: "Painel" },
+      {
+        onSuccess: (k) => {
+          setFullKey(k.raw);
+          setNewPreview(k.preview);
+          setCopied(false);
+          toast.success("Nova chave gerada.", {
+            description: "Copie agora — a íntegra some quando você fechar.",
+            action: {
+              label: "Copiar",
+              onClick: () => {
+                navigator.clipboard?.writeText(k.raw).catch(() => {});
+              },
+            },
+          });
+          if (prevId) revokeKey.mutate({ id: prevId });
         },
       },
-    });
+    );
   }
 
   return (
@@ -183,7 +200,7 @@ export default function ChannelsPage() {
           title="Adicionar canal"
           description="Conecte um novo canal de atendimento a um projeto."
           submitLabel="Adicionar canal"
-          submitting={form.formState.isSubmitting}
+          submitting={createChannel.isPending}
           onSubmit={onSubmit}
         >
           <Field data-invalid={!!form.formState.errors.label}>
@@ -231,7 +248,7 @@ export default function ChannelsPage() {
                     <SelectValue placeholder="Escolha um projeto" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map((p) => (
+                    {projectOptions.map((p) => (
                       <SelectItem key={p.id} value={p.name}>
                         {p.name}
                       </SelectItem>
@@ -255,10 +272,39 @@ export default function ChannelsPage() {
         </FormSheet>
       </PageHeader>
 
+      {/* ── Erro ─────────────────────────────────────────────────── */}
+      {isError && (
+        <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-crimson/30 bg-crimson/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-[13px] text-foreground">
+            <TriangleAlert className="size-4 text-crimson" />
+            Não foi possível carregar os canais da API.
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Tentar de novo
+          </Button>
+        </div>
+      )}
+
       {/* ── Grid de canais ───────────────────────────────────────── */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        {items.map((c) => {
-          const Icon = typeIcon[c.type];
+        {isLoading &&
+          Array.from({ length: 2 }).map((_, i) => (
+            <Card key={`sk-${i}`} className="gap-0 py-0">
+              <CardContent className="flex flex-col gap-4 p-4">
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-10 rounded-md" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                    <Skeleton className="mt-2 h-3 w-32" />
+                  </div>
+                </div>
+                <Skeleton className="h-8 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        {!isLoading && items.map((c) => {
+          const Icon = typeIcon[c.type] ?? Globe;
           const connected = c.status === "Conectado";
           const disconnected = c.status === "Desconectado";
           const pending = c.status === "Pendente";
@@ -267,7 +313,7 @@ export default function ChannelsPage() {
               <CardContent className="flex flex-col gap-4 p-4">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`flex size-10 shrink-0 items-center justify-center rounded-md ${typeTone[c.type]}`}
+                    className={`flex size-10 shrink-0 items-center justify-center rounded-md ${typeTone[c.type] ?? "bg-muted text-muted-foreground"}`}
                   >
                     <Icon className="size-5" />
                   </div>
