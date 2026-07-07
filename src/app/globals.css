@@ -336,11 +336,6 @@
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-fraunces);
 
-  /* Motion — vocabulário (durações via duration-* padrão; admin = motion contida) */
-  --ease-enter: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
   /* Beams do memory-hub (assinatura da landing) */
   --animate-beam-flow: beam-flow 3.4s linear infinite;
   @keyframes beam-flow {
@@ -352,6 +347,30 @@
   --radius-md: calc(var(--radius) - 2px); /* 6px */
   --radius-lg: var(--radius);             /* 8px */
   --radius-xl: calc(var(--radius) + 4px); /* 12px */
+}
+
+/* Motion + elevação nível 1 — padrão CRAFT.md (Jakub Krehel × Emil Kowalski).
+   @theme "puro" (não-inline): emite as vars no :root (animate-rise/CSS cru
+   dependem disso) E gera utilities (ease-out-strong, shadow-border…). */
+@theme {
+  /* Curvas canônicas (docs/craft/emil-standards.md §Easing; nunca ease-in em UI) */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);     /* default UI: enter E exit */
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1); /* movimento/morph na tela */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);         /* drawers (curva iOS/Vaul) */
+  --ease-enter: cubic-bezier(0.25, 0.46, 0.45, 0.94);    /* entrada suave de conteúdo (Jakub) */
+  --ease-exit: cubic-bezier(0.23, 1, 0.32, 1);           /* exit = ease-out (o antigo valor era ease-in — proibido) */
+  --ease-icon: cubic-bezier(0.2, 0, 0, 1);               /* cross-fade de ícones sem lib (Jakub) */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);      /* SÓ delight raro; nunca UI frequente */
+
+  /* Sombra-como-borda (Jakub): anel 1px + lift + profundidade no light;
+     no dark as camadas somem → anel branco único (override no .dark abaixo). */
+  --shadow-border: 0 0 0 1px rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06), 0 2px 4px 0 rgb(0 0 0 / 0.04);
+  --shadow-border-hover: 0 0 0 1px rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08), 0 2px 4px 0 rgb(0 0 0 / 0.06);
+}
+
+.dark {
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-border-hover: 0 0 0 1px rgb(255 255 255 / 0.13);
 }
 
 @layer base {
@@ -381,7 +400,7 @@
     text-wrap: balance;
   }
   h1 { letter-spacing: -0.02em; }
-  p { text-wrap: pretty; }
+  p, li, figcaption { text-wrap: pretty; }
 
   /* Opt-in: título denso que precisa voltar pro sans (ex.: header de tabela) */
   .font-sans-force { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important; }
@@ -440,6 +459,49 @@
   to { opacity: 1; transform: none; }
 }
 .animate-rise { animation: rise 260ms var(--ease-enter) both; }
+
+/* Utilities de craft — CRAFT.md §4/§6 (valores travados; não desviar) ------- */
+
+/* Press interruptível: exatamente scale(0.96) (Jakub; nunca <0.95) */
+@utility press {
+  transition-property: scale;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out-strong);
+  &:active:not(:disabled) { scale: 0.96; }
+}
+
+/* Outline inset p/ imagens: preto/branco PUROS 10% — nunca tinta da paleta,
+   nunca Heat (regra inegociável do Jakub). Offset -1px = não afeta layout. */
+@utility img-outline {
+  outline: 1px solid rgb(0 0 0 / 0.1);
+  outline-offset: -1px;
+  .dark & { outline-color: rgb(255 255 255 / 0.1); }
+}
+
+/* Hit area 40×40 p/ controles visualmente menores (WCAG 2.5.8).
+   Cuidado: hit areas de vizinhos interativos não podem se sobrepor. */
+@utility hit-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Enter de conteúdo (Jakub): fade + rise 12px + blur; stagger via --stagger
+   (30–80ms entre itens — usar style={{ "--stagger": i }}). */
+@keyframes craft-enter {
+  from { opacity: 0; translate: 0 12px; filter: blur(4px); }
+}
+@utility animate-enter {
+  animation: craft-enter 400ms var(--ease-enter) both;
+  animation-delay: calc(60ms * var(--stagger, 0));
+}
 
 /* A11y — respeita quem pede menos movimento */
 @media (prefers-reduced-motion: reduce) {

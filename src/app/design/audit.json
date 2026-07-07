@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T03:52:13.383Z",
+  "generatedAt": "2026-07-07T08:33:31.966Z",
   "checks": [
     {
       "key": "hex",
@@ -13,7 +13,7 @@
       "label": "`transition: all` (listar props)",
       "count": 2,
       "samples": [
-        "src/app/design/page.tsx:173",
+        "src/app/design/page.tsx:224",
         "src/app/design/system.ts:54"
       ],
       "note": "inclui defaults do shadcn"
@@ -37,6 +37,34 @@
       "count": 0,
       "samples": [],
       "note": "sweep -text"
+    },
+    {
+      "key": "bare-transition",
+      "label": "Classe `transition` pura (= all)",
+      "count": 0,
+      "samples": [],
+      "note": "CRAFT.md §5"
+    },
+    {
+      "key": "ease-in",
+      "label": "`ease-in` em UI (proibido)",
+      "count": 0,
+      "samples": [],
+      "note": "CRAFT.md §2"
+    },
+    {
+      "key": "slow-ui",
+      "label": "Duração de UI > 300ms",
+      "count": 0,
+      "samples": [],
+      "note": "CRAFT.md §3"
+    },
+    {
+      "key": "scale-zero",
+      "label": "Entrada de scale(0)/zoom-in-0",
+      "count": 0,
+      "samples": [],
+      "note": "CRAFT.md §4"
     }
   ]
 }

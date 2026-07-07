@@ -62,6 +62,16 @@ for (const f of files.filter((f) => /\.tsx$/.test(f))) {
   }
 }
 
+/* 5b. CRAFT.md — guardrails Jakub×Emil (motion) */
+// classe `transition` pura (= transition: all) em className de tsx
+const bareTransition = scan("[\"'\\s]transition[\\s\"']", (f) => /\.tsx$/.test(f));
+// ease-in como classe de UI (proibido; ease-in-out é permitido)
+const easeIn = scan("[\"'\\s]ease-in[\\s\"']", (f) => /\.tsx$/.test(f));
+// duração de UI acima de 300ms (350+; 300 é o teto)
+const slowUI = scan("duration-(3[5-9]\\d|[4-9]\\d{2}|[1-9]\\d{3,})", (f) => /\.tsx$/.test(f));
+// entrada a partir de scale(0) — "nada aparece do nada"
+const scaleZero = scan("(zoom-in-0|scale-0)[\\s\"']", (f) => /\.tsx$/.test(f));
+
 /* 5. Cor semântica usada (dot/tint/texto) — a triar no sweep -text */
 // semântico VIVO usado como texto (deveria ser -text). crimson já é AA (sem -text) → fora.
 const semColor = scan("text-(forest|honey|amethyst|bluetron)\\b(?!-text)", (f) => /\.tsx$/.test(f));
@@ -72,6 +82,10 @@ const checks = [
   { key: "ellipsis", label: "Reticências `...` (usar `…`)", count: dots.length, samples: dots.slice(0, 6) },
   { key: "icon-aria", label: "Botão só-ícone sem aria-label", count: iconNoLabel.length, samples: iconNoLabel.slice(0, 6), note: "heurístico" },
   { key: "sem-color", label: "Cor semântica a triar (dot/tint/texto)", count: semColor.length, samples: semColor.slice(0, 6), note: "sweep -text" },
+  { key: "bare-transition", label: "Classe `transition` pura (= all)", count: bareTransition.length, samples: bareTransition.slice(0, 6), note: "CRAFT.md §5" },
+  { key: "ease-in", label: "`ease-in` em UI (proibido)", count: easeIn.length, samples: easeIn.slice(0, 6), note: "CRAFT.md §2" },
+  { key: "slow-ui", label: "Duração de UI > 300ms", count: slowUI.length, samples: slowUI.slice(0, 6), note: "CRAFT.md §3" },
+  { key: "scale-zero", label: "Entrada de scale(0)/zoom-in-0", count: scaleZero.length, samples: scaleZero.slice(0, 6), note: "CRAFT.md §4" },
 ];
 
 const out = { generatedAt: new Date().toISOString(), checks };

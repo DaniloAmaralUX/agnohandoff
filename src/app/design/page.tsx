@@ -687,10 +687,12 @@ export default function DesignPage() {
               <Card>
                 <CardContent className="space-y-2 pt-6 font-mono text-[12px]">
                   {/* Tokens em mono 12px — heat-text p/ passar AA no light (achado) */}
-                  <p><span className="text-heat-text">--ease-enter</span> cubic-bezier(.4,0,.2,1)</p>
-                  <p><span className="text-heat-text">--ease-exit</span> cubic-bezier(.4,0,1,1)</p>
-                  <p><span className="text-heat-text">--ease-spring</span> cubic-bezier(.34,1.56,.64,1)</p>
-                  <p className="pt-2 text-muted-foreground">durações: 150 · 200 · 300ms — nunca &gt; 500</p>
+                  <p><span className="text-heat-text">--ease-out-strong</span> cubic-bezier(.23,1,.32,1)</p>
+                  <p><span className="text-heat-text">--ease-in-out-strong</span> cubic-bezier(.77,0,.175,1)</p>
+                  <p><span className="text-heat-text">--ease-drawer</span> cubic-bezier(.32,.72,0,1)</p>
+                  <p><span className="text-heat-text">--ease-enter</span> cubic-bezier(.25,.46,.45,.94)</p>
+                  <p><span className="text-heat-text">--ease-spring</span> cubic-bezier(.34,1.56,.64,1) <span className="text-muted-foreground">(só delight raro)</span></p>
+                  <p className="pt-2 text-muted-foreground">press 100–160 · tooltip 125–200 · dropdown 150–250 · modal 200–500 — UI &lt; 300ms; exit &lt; enter; nunca ease-in. Padrão completo: docs/CRAFT.md</p>
                 </CardContent>
               </Card>
               <Card>

@@ -60,7 +60,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("agnohub:cmdk"))}
-          className="hidden items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[13px] text-muted-foreground transition hover:bg-accent active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:flex"
+          className="hidden items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-[13px] text-muted-foreground transition-[background-color,scale] duration-150 ease-out-strong hover:bg-accent active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:flex"
         >
           <Search className="size-3.5" />
           <span>Buscar</span>
