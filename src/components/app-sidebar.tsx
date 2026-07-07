@@ -1,0 +1,292 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  MessagesSquare,
+  Bot,
+  Wrench,
+  Radio,
+  Play,
+  BarChart3,
+  FolderKanban,
+  Plug,
+  CreditCard,
+  Settings,
+  ChevronsUpDown,
+  Check,
+  Plus,
+  LogOut,
+  UserRound,
+  Sparkles,
+  LifeBuoy,
+  Server,
+  Brain,
+  SquareTerminal,
+  Rocket,
+  Folder,
+  ShieldCheck,
+} from "lucide-react";
+
+import { org, workspaces } from "@/lib/data";
+import { clearApiKey } from "@/lib/auth";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+
+const nav: {
+  label: string;
+  items: { title: string; href: string; icon: React.ElementType; badge?: string }[];
+}[] = [
+  {
+    label: "Principal",
+    items: [
+      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { title: "Conversas", href: "/conversations", icon: MessagesSquare, badge: "3" },
+    ],
+  },
+  {
+    label: "Construir",
+    items: [
+      { title: "Agentes", href: "/agents", icon: Bot },
+      { title: "Ferramentas", href: "/tools", icon: Wrench },
+      { title: "MCP", href: "/mcp", icon: Server },
+      { title: "Memória", href: "/memory", icon: Brain },
+      { title: "Canais", href: "/channels", icon: Radio },
+      { title: "Playground", href: "/playground", icon: Play },
+      { title: "Studio", href: "/studio", icon: SquareTerminal },
+    ],
+  },
+  {
+    label: "Operar",
+    items: [
+      { title: "Analytics", href: "/analytics", icon: BarChart3 },
+      { title: "Deploy", href: "/deploy", icon: Rocket },
+      { title: "Workspaces", href: "/workspaces", icon: FolderKanban },
+      { title: "Projetos", href: "/projects", icon: Folder },
+      { title: "Integrações", href: "/integrations", icon: Plug },
+    ],
+  },
+  {
+    label: "Conta",
+    items: [
+      { title: "Faturamento", href: "/billing", icon: CreditCard },
+      { title: "Configurações", href: "/settings", icon: Settings },
+    ],
+  },
+];
+
+export function AppSidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  return (
+    <Sidebar collapsible="icon" className="border-sidebar-border">
+      {/* ── Switcher de organização ───────────────────────────────── */}
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent"
+                >
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-heat text-heat-foreground">
+                    <span className="text-[15px] font-bold leading-none">A</span>
+                  </div>
+                  <div className="grid flex-1 text-left leading-tight">
+                    <span className="truncate text-[13px] font-semibold">
+                      {org.name}
+                    </span>
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      Plano {org.plan} · AgnoHub
+                    </span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-64 rounded-lg"
+                align="start"
+                side="right"
+                sideOffset={8}
+              >
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Organização
+                </DropdownMenuLabel>
+                <DropdownMenuItem className="gap-2">
+                  <div className="flex size-6 items-center justify-center rounded-md bg-heat text-heat-foreground">
+                    <span className="text-[10px] font-bold">{org.logoInitials}</span>
+                  </div>
+                  <span className="font-medium">{org.name}</span>
+                  <Check className="ml-auto size-4 text-heat" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Workspaces
+                </DropdownMenuLabel>
+                {workspaces.map((ws) => (
+                  <DropdownMenuItem key={ws.id} className="gap-2">
+                    <FolderKanban className="size-4 text-muted-foreground" />
+                    <span className="truncate">{ws.name}</span>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2 text-muted-foreground">
+                  <Plus className="size-4" />
+                  Novo workspace
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      {/* ── Navegação agrupada ────────────────────────────────────── */}
+      <SidebarContent>
+        {nav.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarMenu>
+              {group.items.map((item) => {
+                const active =
+                  pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                        {item.badge && (
+                          <Badge className="ml-auto h-5 min-w-5 justify-center rounded-full bg-heat px-1 text-[10px] tabular-nums text-heat-foreground">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+
+      {/* ── Rodapé: conta ─────────────────────────────────────────── */}
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent"
+                >
+                  <Avatar className="size-8 rounded-md">
+                    <AvatarFallback className="rounded-md bg-graphite text-[11px] font-semibold text-white">
+                      DA
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left leading-tight">
+                    <span className="truncate text-[13px] font-semibold">
+                      Danilo Amaral
+                    </span>
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      danilo@vitalmed.com.br
+                    </span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-60 rounded-lg"
+                align="end"
+                side="right"
+                sideOffset={8}
+              >
+                <DropdownMenuLabel className="flex items-center gap-2 py-2">
+                  <Avatar className="size-8 rounded-md">
+                    <AvatarFallback className="rounded-md bg-graphite text-[11px] font-semibold text-white">
+                      DA
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid leading-tight">
+                    <span className="text-[13px] font-semibold">Danilo Amaral</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">
+                      danilo@vitalmed.com.br
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2 heat-tint font-medium">
+                  <Sparkles className="size-4" />
+                  Fazer upgrade para Scale
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="gap-2">
+                    <UserRound className="size-4 text-muted-foreground" />
+                    Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2">
+                    <Settings className="size-4 text-muted-foreground" />
+                    Configurações
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2">
+                    <LifeBuoy className="size-4 text-muted-foreground" />
+                    Suporte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="gap-2">
+                    <Link href="/super-admin">
+                      <ShieldCheck className="size-4 text-muted-foreground" />
+                      Super Admin
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-crimson focus:text-crimson"
+                  onClick={() => {
+                    clearApiKey();
+                    router.push("/login");
+                  }}
+                >
+                  <LogOut className="size-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}

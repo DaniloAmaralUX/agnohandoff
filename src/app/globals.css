@@ -1,0 +1,443 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================================
+   AgnoHub — Firecrawl-inspired design system
+   Fonte: brand hub oficial da Firecrawl (Heat / Graphite / Paper) + Geist.
+   Heat  #FA5D19  ·  Graphite #262626  ·  Paper #F9F9F9
+   Raios pequenos e técnicos · tipografia suíça (Geist) · mono p/ técnico.
+   ============================================================================ */
+
+:root {
+  color-scheme: light;
+  --radius: 0.5rem; /* 8px base — Firecrawl usa raios pequenos (4/6/8) */
+
+  /* Display serif self-hosted (@fontsource-variable/fraunces, import no layout).
+     Definido AQUI (não no @theme inline, que não emite vars pro :root). */
+  --font-fraunces: "Fraunces Variable";
+
+  /* Marca (OKLCH — Tailwind v4-native; valores dentro do gamut sRGB) */
+  --heat: oklch(0.68 0.2 42);
+  --heat-hover: oklch(0.625 0.19 42);
+  --heat-foreground: oklch(1 0 0);
+  --graphite: oklch(0.265 0.008 55);
+  --paper: oklch(0.985 0.004 65);
+
+  /* Semânticos VIVOS — dot / badge / chart (NÃO usar como texto pequeno) */
+  --amethyst: oklch(0.624 0.223 292.4);
+  --bluetron: oklch(0.58 0.223 262.6);
+  --forest: oklch(0.725 0.173 149.1);
+  --honey: oklch(0.806 0.152 85.4);
+  --crimson: oklch(0.575 0.22 29.8); /* escurecido de #eb3424 p/ AA como texto de erro */
+
+  /* Semânticos p/ TEXTO — L escurecido, WCAG AA (>=4.5:1 sobre paper) */
+  --heat-text: oklch(0.52 0.15 44); /* laranja p/ TEXTO pequeno (AA >=4.5:1 sobre paper) */
+  --forest-text: oklch(0.53 0.149 149.1);
+  --honey-text: oklch(0.55 0.113 85.4);
+  --bluetron-text: oklch(0.56 0.223 262.6);
+  --amethyst-text: oklch(0.57 0.223 292.4);
+
+  /* Slots shadcn — LIGHT (AgnoHub: Paper aquecido + Graphite quente + Heat próprio) */
+  --background: oklch(0.985 0.004 65);
+  --foreground: oklch(0.255 0.008 55);
+
+  --card: oklch(0.998 0.002 65);
+  --card-foreground: oklch(0.255 0.008 55);
+
+  --popover: oklch(0.998 0.002 65);
+  --popover-foreground: oklch(0.255 0.008 55);
+
+  --primary: oklch(0.68 0.2 42);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.964 0.006 65);
+  --secondary-foreground: oklch(0.265 0.008 55);
+
+  --muted: oklch(0.964 0.006 65);
+  --muted-foreground: oklch(0.522 0.012 58);
+
+  --accent: oklch(0.968 0.008 60);
+  --accent-foreground: oklch(0.265 0.008 55);
+
+  --destructive: oklch(0.575 0.22 29.8);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.922 0.007 65);
+  --input: oklch(0.905 0.008 65);
+  --ring: oklch(0.68 0.2 42);
+
+  /* Elevação — sombras em camadas (3 níveis: card flat · overlay · modal) */
+  --shadow-overlay: 0 1px 1px rgb(0 0 0 / 0.02), 0 4px 8px -4px rgb(0 0 0 / 0.04), 0 16px 24px -8px rgb(0 0 0 / 0.06);
+  --shadow-modal: 0 1px 1px rgb(0 0 0 / 0.02), 0 8px 16px -4px rgb(0 0 0 / 0.05), 0 24px 32px -8px rgb(0 0 0 / 0.07);
+
+  /* Charts (vivos) */
+  --chart-1: oklch(0.68 0.2 42);
+  --chart-2: oklch(0.58 0.223 262.6);
+  --chart-3: oklch(0.725 0.173 149.1);
+  --chart-4: oklch(0.806 0.152 85.4);
+  --chart-5: oklch(0.624 0.223 292.4);
+
+  /* Sidebar (a "sidebar massa") */
+  --sidebar: oklch(0.99 0.004 65);
+  --sidebar-foreground: oklch(0.265 0.008 55);
+  --sidebar-primary: oklch(0.68 0.2 42);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.968 0.008 60);
+  --sidebar-accent-foreground: oklch(0.265 0.008 55);
+  --sidebar-border: oklch(0.94 0.006 65);
+  --sidebar-ring: oklch(0.68 0.2 42);
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* AgnoHub dark: Graphite quente como base (OKLCH) */
+  --background: oklch(0.215 0.006 55);
+  --foreground: oklch(0.95 0.003 70);
+
+  --card: oklch(0.25 0.007 55);
+  --card-foreground: oklch(0.95 0.003 70);
+
+  --popover: oklch(0.25 0.007 55);
+  --popover-foreground: oklch(0.95 0.003 70);
+
+  --primary: oklch(0.68 0.2 42);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.29 0.006 55);
+  --secondary-foreground: oklch(0.95 0.003 70);
+
+  --muted: oklch(0.29 0.006 55);
+  --muted-foreground: oklch(0.72 0.006 60);
+
+  --accent: oklch(0.31 0.008 55);
+  --accent-foreground: oklch(0.95 0.003 70);
+
+  --destructive: oklch(0.653 0.196 30.3);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.31 0.006 55);
+  --input: oklch(0.325 0.007 55);
+  --ring: oklch(0.68 0.2 42);
+
+  /* Semânticos p/ dark: crimson mais claro + -text mais claros (AA sobre #191919) */
+  --crimson: oklch(0.635 0.22 29.8);
+  --heat-text: oklch(0.74 0.16 44);
+  --forest-text: oklch(0.6 0.169 149.1);
+  --honey-text: oklch(0.615 0.126 85.4);
+  --bluetron-text: oklch(0.62 0.205 262.6);
+  --amethyst-text: oklch(0.635 0.216 292.4);
+
+  --chart-1: oklch(0.68 0.2 42);
+  --chart-2: oklch(0.643 0.19 262.7);
+  --chart-3: oklch(0.776 0.174 149.8);
+  --chart-4: oklch(0.843 0.15 89.6);
+  --chart-5: oklch(0.68 0.189 294.1);
+
+  --sidebar: oklch(0.2 0.006 55);
+  --sidebar-foreground: oklch(0.95 0.003 70);
+  --sidebar-primary: oklch(0.68 0.2 42);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.27 0.007 55);
+  --sidebar-accent-foreground: oklch(0.95 0.003 70);
+  --sidebar-border: oklch(0.29 0.006 55);
+  --sidebar-ring: oklch(0.68 0.2 42);
+}
+
+/* Escalas de cor 50–900 — rampas perceptuais OKLCH (primitivos, iguais nos 2 modos).
+   Uso: bg/border em passos claros (50–300), texto em escuros (700–900). */
+:root {
+  --heat-50: oklch(0.972 0.014 42);
+  --heat-100: oklch(0.93 0.037 42);
+  --heat-200: oklch(0.86 0.079 42);
+  --heat-300: oklch(0.77 0.141 42);
+  --heat-400: oklch(0.68 0.2 42);
+  --heat-500: oklch(0.6 0.19 42);
+  --heat-600: oklch(0.52 0.164 42);
+  --heat-700: oklch(0.44 0.139 42);
+  --heat-800: oklch(0.34 0.108 42);
+  --heat-900: oklch(0.25 0.079 42);
+  --forest-50: oklch(0.972 0.046 149.1);
+  --forest-100: oklch(0.93 0.123 149.1);
+  --forest-200: oklch(0.86 0.173 149.1);
+  --forest-300: oklch(0.77 0.173 149.1);
+  --forest-400: oklch(0.68 0.173 149.1);
+  --forest-500: oklch(0.6 0.169 149.1);
+  --forest-600: oklch(0.52 0.146 149.1);
+  --forest-700: oklch(0.44 0.124 149.1);
+  --forest-800: oklch(0.34 0.096 149.1);
+  --forest-900: oklch(0.25 0.071 149.1);
+  --honey-50: oklch(0.972 0.03 85.4);
+  --honey-100: oklch(0.93 0.076 85.4);
+  --honey-200: oklch(0.86 0.152 85.4);
+  --honey-300: oklch(0.77 0.152 85.4);
+  --honey-400: oklch(0.68 0.139 85.4);
+  --honey-500: oklch(0.6 0.123 85.4);
+  --honey-600: oklch(0.52 0.107 85.4);
+  --honey-700: oklch(0.44 0.09 85.4);
+  --honey-800: oklch(0.34 0.07 85.4);
+  --honey-900: oklch(0.25 0.051 85.4);
+  --bluetron-50: oklch(0.972 0.013 262.6);
+  --bluetron-100: oklch(0.93 0.034 262.6);
+  --bluetron-200: oklch(0.86 0.069 262.6);
+  --bluetron-300: oklch(0.77 0.117 262.6);
+  --bluetron-400: oklch(0.68 0.169 262.6);
+  --bluetron-500: oklch(0.6 0.217 262.6);
+  --bluetron-600: oklch(0.52 0.223 262.6);
+  --bluetron-700: oklch(0.44 0.214 262.6);
+  --bluetron-800: oklch(0.34 0.166 262.6);
+  --bluetron-900: oklch(0.25 0.122 262.6);
+  --amethyst-50: oklch(0.972 0.015 292.4);
+  --amethyst-100: oklch(0.93 0.037 292.4);
+  --amethyst-200: oklch(0.86 0.076 292.4);
+  --amethyst-300: oklch(0.77 0.129 292.4);
+  --amethyst-400: oklch(0.68 0.186 292.4);
+  --amethyst-500: oklch(0.6 0.223 292.4);
+  --amethyst-600: oklch(0.52 0.223 292.4);
+  --amethyst-700: oklch(0.44 0.223 292.4);
+  --amethyst-800: oklch(0.34 0.19 292.4);
+  --amethyst-900: oklch(0.25 0.14 292.4);
+  --crimson-50: oklch(0.972 0.014 29.8);
+  --crimson-100: oklch(0.93 0.036 29.8);
+  --crimson-200: oklch(0.86 0.076 29.8);
+  --crimson-300: oklch(0.77 0.136 29.8);
+  --crimson-400: oklch(0.68 0.209 29.8);
+  --crimson-500: oklch(0.6 0.22 29.8);
+  --crimson-600: oklch(0.52 0.21 29.8);
+  --crimson-700: oklch(0.44 0.178 29.8);
+  --crimson-800: oklch(0.34 0.137 29.8);
+  --crimson-900: oklch(0.25 0.101 29.8);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Tokens de marca expostos como utilitários (bg-heat, text-heat, etc.) */
+  --color-heat: var(--heat);
+  --color-heat-hover: var(--heat-hover);
+  --color-heat-foreground: var(--heat-foreground);
+  --color-graphite: var(--graphite);
+  --color-paper: var(--paper);
+  --color-amethyst: var(--amethyst);
+  --color-bluetron: var(--bluetron);
+  --color-forest: var(--forest);
+  --color-honey: var(--honey);
+  --color-crimson: var(--crimson);
+
+  /* Variantes p/ TEXTO (AA) dos semânticos — usar em rótulos/valores, não em dots */
+  --color-heat-text: var(--heat-text);
+  --color-forest-text: var(--forest-text);
+  --color-honey-text: var(--honey-text);
+  --color-bluetron-text: var(--bluetron-text);
+  --color-amethyst-text: var(--amethyst-text);
+
+  /* Escalas 50–900 → utilities (bg-heat-100, text-forest-700, border-crimson-200…) */
+  --color-heat-50: var(--heat-50);
+  --color-heat-100: var(--heat-100);
+  --color-heat-200: var(--heat-200);
+  --color-heat-300: var(--heat-300);
+  --color-heat-400: var(--heat-400);
+  --color-heat-500: var(--heat-500);
+  --color-heat-600: var(--heat-600);
+  --color-heat-700: var(--heat-700);
+  --color-heat-800: var(--heat-800);
+  --color-heat-900: var(--heat-900);
+  --color-forest-50: var(--forest-50);
+  --color-forest-100: var(--forest-100);
+  --color-forest-200: var(--forest-200);
+  --color-forest-300: var(--forest-300);
+  --color-forest-400: var(--forest-400);
+  --color-forest-500: var(--forest-500);
+  --color-forest-600: var(--forest-600);
+  --color-forest-700: var(--forest-700);
+  --color-forest-800: var(--forest-800);
+  --color-forest-900: var(--forest-900);
+  --color-honey-50: var(--honey-50);
+  --color-honey-100: var(--honey-100);
+  --color-honey-200: var(--honey-200);
+  --color-honey-300: var(--honey-300);
+  --color-honey-400: var(--honey-400);
+  --color-honey-500: var(--honey-500);
+  --color-honey-600: var(--honey-600);
+  --color-honey-700: var(--honey-700);
+  --color-honey-800: var(--honey-800);
+  --color-honey-900: var(--honey-900);
+  --color-bluetron-50: var(--bluetron-50);
+  --color-bluetron-100: var(--bluetron-100);
+  --color-bluetron-200: var(--bluetron-200);
+  --color-bluetron-300: var(--bluetron-300);
+  --color-bluetron-400: var(--bluetron-400);
+  --color-bluetron-500: var(--bluetron-500);
+  --color-bluetron-600: var(--bluetron-600);
+  --color-bluetron-700: var(--bluetron-700);
+  --color-bluetron-800: var(--bluetron-800);
+  --color-bluetron-900: var(--bluetron-900);
+  --color-amethyst-50: var(--amethyst-50);
+  --color-amethyst-100: var(--amethyst-100);
+  --color-amethyst-200: var(--amethyst-200);
+  --color-amethyst-300: var(--amethyst-300);
+  --color-amethyst-400: var(--amethyst-400);
+  --color-amethyst-500: var(--amethyst-500);
+  --color-amethyst-600: var(--amethyst-600);
+  --color-amethyst-700: var(--amethyst-700);
+  --color-amethyst-800: var(--amethyst-800);
+  --color-amethyst-900: var(--amethyst-900);
+  --color-crimson-50: var(--crimson-50);
+  --color-crimson-100: var(--crimson-100);
+  --color-crimson-200: var(--crimson-200);
+  --color-crimson-300: var(--crimson-300);
+  --color-crimson-400: var(--crimson-400);
+  --color-crimson-500: var(--crimson-500);
+  --color-crimson-600: var(--crimson-600);
+  --color-crimson-700: var(--crimson-700);
+  --color-crimson-800: var(--crimson-800);
+  --color-crimson-900: var(--crimson-900);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+
+  /* Motion — vocabulário (durações via duration-* padrão; admin = motion contida) */
+  --ease-enter: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Beams do memory-hub (assinatura da landing) */
+  --animate-beam-flow: beam-flow 3.4s linear infinite;
+  @keyframes beam-flow {
+    to { stroke-dashoffset: -520; }
+  }
+
+  /* Raios pequenos — a assinatura técnica da Firecrawl */
+  --radius-sm: calc(var(--radius) - 4px); /* 4px */
+  --radius-md: calc(var(--radius) - 2px); /* 6px */
+  --radius-lg: var(--radius);             /* 8px */
+  --radius-xl: calc(var(--radius) + 4px); /* 12px */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Tipografia: display serif (Fraunces) nos títulos-herói h1/h2 — a "voz" do
+     AgnoHub, calorosa e memorável; Geist Sans nos títulos densos (h3/h4). */
+  h1, h2 {
+    font-family: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  h3, h4 {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  h1 { letter-spacing: -0.02em; }
+  p { text-wrap: pretty; }
+
+  /* Opt-in: título denso que precisa voltar pro sans (ex.: header de tabela) */
+  .font-sans-force { font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important; }
+
+  /* Números tabulares em métricas/tabelas */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Utilitários de marca ---------------------------------------------------- */
+
+/* Botão/elemento com o laranja Heat + hover coeso */
+.bg-heat { background-color: var(--heat); }
+.bg-heat:hover { background-color: var(--heat-hover); }
+
+/* Tint sutil de heat p/ realces (badges, seleção) */
+.heat-tint {
+  background-color: color-mix(in srgb, var(--heat) 10%, transparent);
+  color: var(--heat);
+}
+.dark .heat-tint {
+  background-color: color-mix(in srgb, var(--heat) 18%, transparent);
+  color: var(--heat-300);
+}
+
+/* Superfície "Paper" com hairline — o card técnico da Firecrawl */
+.surface {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* Grid de fundo estilo blueprint (bem sutil) p/ heros */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Scrollbar discreta */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Motion — entrada sutil (empty states / reveals); curta p/ admin. Zerada por reduced-motion abaixo. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-rise { animation: rise 260ms var(--ease-enter) both; }
+
+/* A11y — respeita quem pede menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

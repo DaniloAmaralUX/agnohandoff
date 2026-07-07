@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-07-07T03:52:13.383Z",
+  "checks": [
+    {
+      "key": "hex",
+      "label": "Hex hardcoded (usar token)",
+      "count": 0,
+      "samples": [],
+      "note": "quase zero — migração OKLCH"
+    },
+    {
+      "key": "transition-all",
+      "label": "`transition: all` (listar props)",
+      "count": 2,
+      "samples": [
+        "src/app/design/page.tsx:173",
+        "src/app/design/system.ts:54"
+      ],
+      "note": "inclui defaults do shadcn"
+    },
+    {
+      "key": "ellipsis",
+      "label": "Reticências `...` (usar `…`)",
+      "count": 0,
+      "samples": []
+    },
+    {
+      "key": "icon-aria",
+      "label": "Botão só-ícone sem aria-label",
+      "count": 0,
+      "samples": [],
+      "note": "heurístico"
+    },
+    {
+      "key": "sem-color",
+      "label": "Cor semântica a triar (dot/tint/texto)",
+      "count": 0,
+      "samples": [],
+      "note": "sweep -text"
+    }
+  ]
+}
