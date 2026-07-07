@@ -100,6 +100,21 @@ describe("useCreateApiKey / useRevokeApiKey", () => {
     expect(postMock).not.toHaveBeenCalled();
   });
 
+  it("modo API: erro no POST vira ApiError; preview derivado quando falta", async () => {
+    flags.useMock = false;
+    getMock.mockResolvedValue({ data: { projects: [] }, error: undefined });
+    postMock.mockResolvedValueOnce({ data: undefined, error: { detail: "limite" } });
+    const { result } = renderHook(() => useCreateApiKey(), { wrapper: wrapper() });
+    await expect(result.current.mutateAsync({ name: "Painel" })).rejects.toBeInstanceOf(ApiError);
+
+    postMock.mockResolvedValueOnce({
+      data: { api_key: "proj_abcdefgh1234", created: true },
+      error: undefined,
+    });
+    const created = await result.current.mutateAsync({ name: "Painel" });
+    expect(created.preview).toBe("proj_abc···1234");
+  });
+
   it("modo API: POST devolve a chave crua uma única vez", async () => {
     flags.useMock = false;
     getMock.mockResolvedValue({ data: { projects: [] }, error: undefined });

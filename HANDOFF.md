@@ -1,6 +1,6 @@
 # AgnoHub — Handoff para os devs (painel React)
 
-Este é o guia técnico do handoff. O **frontend de produção** está pronto (design system + todas as telas + o **padrão de integração com a API**, com 2 telas ligadas de verdade como referência). Aqui está tudo que os devs precisam para **finalizar a integração** e o que o **backend precisa expor**.
+Este é o guia técnico do handoff. O **frontend de produção** está pronto (design system + todas as telas + o **padrão de integração com a API**, com **11 telas ligadas de verdade**: Projetos, Agentes, Workspaces, Canais + API Keys, Conversas, Playground com streaming SSE, Memória, Faturamento, Studio, Login e Onboarding/registro). Aqui está o que resta para **finalizar a integração** e o que o **backend precisa expor**.
 
 - Documentação de design (viva): rota **`/design`** · Fluxos: **`/fluxos`** · Setup/scripts: **`README.md`** · Board: **`ISSUES.md`**
 - Design source = o **código** (tokens em `src/app/globals.css`).
@@ -13,11 +13,16 @@ Este é o guia técnico do handoff. O **frontend de produção** está pronto (d
 src/lib/
   config.ts     # USE_MOCK / USE_API a partir de NEXT_PUBLIC_API_URL
   auth.ts       # sessão X-API-Key: get/set/clear/validate
+  project-context.tsx # ProjectProvider: projeto ativo (seletor na topbar)
   api/
     schema.ts   # tipos GERADOS do OpenAPI  (pnpm gen:api — não editar à mão)
     client.ts   # openapi-fetch tipado; injeta header X-API-Key
-    projects.ts # useProjects()  -> padrão FLAT
-    agents.ts   # useAgents()    -> padrão ANINHADO (projeto -> agentes)
+    projects.ts # useProjects()  -> padrão FLAT (+ slugify, create real)
+    agents.ts   # useAgents()    -> padrão ANINHADO (projeto ativo -> agentes)
+    workspaces.ts / channels.ts / api-keys.ts / conversations.ts
+    chat.ts     # useChatSession(): streaming SSE + fallback; useChatHistory()
+    platform.ts # useProjectInfo(): org_id p/ o X-Org-Id do billing
+    billing.ts / studio.ts / memory.ts / register.ts
 ```
 
 - **Type-safety end-to-end:** `schema.ts` é gerado do `/openapi.json` do backend → o front **não desalinha** do back. Regenerar: `pnpm gen:api` (backend rodando).
@@ -54,7 +59,7 @@ export function useX() {
 ```
 Para recurso **aninhado** (ex.: agentes/canais por projeto): busque o pai primeiro e use `enabled` + o path param — veja `agents.ts` (`useProjects()` → `projectId` → `api.GET("/api/v1/manage/projects/{project_id}/agents", { params:{ path:{ project_id } } })`).
 
-> **Referência ≠ produção:** o `useAgents` usa o **primeiro** projeto (`projects[0]`). Ao produtizar, parametrize pelo **projeto selecionado** (um seletor na topbar) e propague o `project_id` aos hooks aninhados.
+> **Resolvido:** o projeto ativo agora vem do **seletor na topbar** (`ProjectProvider` em `src/lib/project-context.tsx`, persistido em localStorage). Hooks aninhados (agentes, canais, regras, memória) leem de `useActiveProject()` — fallback no primeiro projeto quando nada foi selecionado.
 
 **Passo 2 — tela** (`src/app/(app)/<rota>/page.tsx`): `"use client"`, troque o import de `@/lib/data` pelo hook, e trate os 3 estados:
 ```tsx
@@ -74,7 +79,9 @@ const { data = [], isLoading, isError, refetch } = useX();
 - **Auth:** header **`X-API-Key: proj_…`** (chave de projeto). CORS liberado.
 - **Já cobre (~65%):** `GET/POST/PATCH/DELETE /api/v1/manage/projects` · `…/projects/{id}/agents` · `…/projects/{id}/channels` · `…/manage/api-keys` · `…/manage/workspaces` · `GET /api/v1/project/info` · `GET /api/v1/conversations` · `POST /api/v1/chat/message` (+ `/chat/message/stream` SSE · `GET /chat/history?session_id=`) · `/api/v1/payload-rules` (CRUD + `/reorder` + `/interpret`) · `/api/v1/billing/plans|purchase|subscribe` · `/api/v1/users/{id}/profile` + `/memory`.
 
-Telas de **referência ligadas:** Projetos ✅, Agentes ✅. As demais estão prontas em UI (modo mock) aguardando o mesmo tratamento.
+Telas **ligadas na API:** Projetos ✅ · Agentes ✅ · Workspaces ✅ · Canais + API Keys ✅ · Conversas ✅ (lista + histórico da sessão; ações humanas são locais — sem PATCH no backend) · Playground ✅ (SSE token a token com fallback) · Memória ✅ (salva via `PATCH /manage/projects/{id}`) · Faturamento ✅ (saldo/planos/compra/assinatura; histórico ilustrativo) · Studio ✅ (CRUD + `interpret` NL) · Onboarding ✅ (`POST /auth/register`, key exibida uma vez). **Aguardando endpoint** (mock com aviso): Ferramentas, MCP, Analytics, Deploy, Configurações da org.
+
+> **Nuances de auth:** rotas de billing usam header **`X-Org-Id`** (o org vem de `GET /project/info` via `useProjectInfo`) — não `X-API-Key`. O SSE do chat é POST (EventSource não serve): `useChatSession` lê o body com `ReadableStream` (parser em `extractSseEvents`).
 
 ---
 

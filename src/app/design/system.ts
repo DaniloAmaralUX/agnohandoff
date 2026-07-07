@@ -53,7 +53,7 @@ export const COMMITMENTS: Commitment[] = [
   { area: "Motion", rule: "Respeita prefers-reduced-motion", status: "aplicado" },
   { area: "Motion", rule: "Sem `transition: all` (listar propriedades)", status: "aplicado", note: "sweep completo (badge/tabs/switch/progress/sidebar/fluxos); os 2 hits do audit são o texto desta regra" },
   { area: "Motion", rule: "Motion só quando comunica (~70% sem motion)", status: "aplicado" },
-  { area: "Motion", rule: "Optimistic UI em toggles", status: "aplicado", where: "useToggleAgent (referência)", note: "toggle Publicado no card do agente" },
+  { area: "Motion", rule: "Optimistic UI em toggles", status: "aplicado", where: "useToggleAgent + useToggleStudioRule", note: "PATCH/PUT reais em modo API, rollback + toast" },
   // Acessibilidade
   { area: "Acessibilidade", rule: "Foco visível (focus-visible ring)", status: "aplicado" },
   { area: "Acessibilidade", rule: "Semântica nativa + Radix antes de ARIA", status: "aplicado" },
@@ -62,9 +62,9 @@ export const COMMITMENTS: Commitment[] = [
   { area: "Acessibilidade", rule: "Alvos de toque ≥ 44px", status: "aplicado", note: "closes de modal + sub-itens/ações da sidebar (pointer-coarse: 44px só em touch)" },
   { area: "Acessibilidade", rule: 'translate="no" em nomes/tokens/IDs', status: "aplicado", note: "IDs/tokens visíveis (model, PAT)" },
   // Estados
-  { area: "Estados", rule: "Loading = skeleton que espelha o layout", status: "parcial", note: "referência (Projetos/Agentes) sim; telas mock são instantâneas — aplicar ao ligar cada tela à API" },
-  { area: "Estados", rule: "Erro = banner + retry", status: "parcial", note: "referência sim; telas mock não têm caminho de erro — aplicar ao ligar à API" },
-  { area: "Estados", rule: "Vazio = EmptyState + CTA", status: "parcial", where: "Projetos/Agentes + DataTable (emptyMessage)" },
+  { area: "Estados", rule: "Loading = skeleton que espelha o layout", status: "aplicado", where: "todas as telas ligadas à API", note: "Dashboard segue mock (aguarda /analytics)" },
+  { area: "Estados", rule: "Erro = banner + retry", status: "aplicado", where: "telas ligadas à API", note: "banner crimson + Tentar de novo; Zod falha com mensagem legível" },
+  { area: "Estados", rule: "Vazio = EmptyState + CTA", status: "aplicado", where: "Projetos/Agentes/Workspaces/Conversas + DataTable (emptyMessage)" },
   // Microcopy
   { area: "Microcopy", rule: "Voz ativa e orientada à ação", status: "aplicado" },
   { area: "Microcopy", rule: "Reticências reais `…` (não `...`)", status: "aplicado", note: "audit: 0" },
@@ -108,6 +108,7 @@ export const ROADMAP: RoadmapItem[] = [
   { title: "D2 — assinatura 'O hub que lembra' (memory hub + beams)", area: "Motion", status: "feito", prioridade: "alta", note: "beams SVG nos tokens, stagger, estático sob reduced-motion; landing" },
   { title: "DataTable compartilhado (TanStack Table)", area: "Componentes", status: "feito", prioridade: "média", note: "portado de satnaing/shadcn-admin (MIT), re-skin Firecrawl; referência na tab Projetos de /workspaces" },
   { title: "Todos os fluxos funcionam no mock (padrão de ação)", area: "Fluxos/UX", status: "feito", prioridade: "alta", note: "FormSheet + otimista + toast em ~14 telas; onboarding multi-step; builder Publicar + prévia-chat" },
+  { title: "11 telas ligadas à API real (dual-mode)", area: "Fluxos/UX", status: "feito", prioridade: "alta", note: "Workspaces/Canais+Keys/Conversas/Playground(SSE)/Memória/Billing/Studio/Onboarding + seletor de projeto na topbar; restam Tools/MCP/Analytics/Deploy/Settings (endpoints ausentes — ISSUES §Backend)" },
 ];
 
 /* Agregados */

@@ -62,6 +62,12 @@ describe("mapApiRule", () => {
     expect(
       mapApiRule({ id: 2, name: "R", scope: "inbound", trigger: { field: "phone" }, is_active: false }),
     ).toMatchObject({ scope: "Entrada", trigger: '{"field":"phone"}', active: false });
+    expect(
+      mapApiRule({ id: 3, name: "R", scope: "outbound", description: "desc" }).trigger,
+    ).toBe("desc");
+    const bare = mapApiRule({ id: 4, name: "R", scope: "custom" });
+    expect(bare.scope).toBe("custom");
+    expect(bare.trigger).toBe("");
   });
 });
 
@@ -114,6 +120,13 @@ describe("useToggleStudioRule", () => {
     flags.useMock = false;
   });
   afterEach(() => vi.clearAllMocks());
+
+  it("modo mock: alterna sem chamar a API", async () => {
+    flags.useMock = true;
+    const { result } = renderHook(() => useToggleStudioRule(), { wrapper: wrapper() });
+    await expect(result.current.mutateAsync({ id: "r1", active: true })).resolves.toBe(true);
+    expect(putMock).not.toHaveBeenCalled();
+  });
 
   it("modo API: PUT is_active na regra", async () => {
     putMock.mockResolvedValue({ data: { id: "r1" }, error: undefined });
@@ -184,6 +197,32 @@ describe("useGenerateStudioRule", () => {
   it("modo API: IA sem regras utilizáveis vira ApiError", async () => {
     flags.useMock = false;
     postMock.mockResolvedValue({ data: { instruction: "x", rules: [], count: 0 }, error: undefined });
+    const { result } = renderHook(() => useGenerateStudioRule(), { wrapper: wrapper() });
+    await expect(result.current.mutateAsync({ instruction: "abc" })).rejects.toBeInstanceOf(
+      ApiError,
+    );
+  });
+
+  it("modo API: criação falhando para todas as regras vira ApiError", async () => {
+    flags.useMock = false;
+    postMock.mockImplementation((path: string) => {
+      if (path === "/api/v1/payload-rules/interpret") {
+        return Promise.resolve({
+          data: { instruction: "x", rules: [{ name: "R" }], count: 1 },
+          error: undefined,
+        });
+      }
+      return Promise.resolve({ data: undefined, error: { detail: "boom" } });
+    });
+    const { result } = renderHook(() => useGenerateStudioRule(), { wrapper: wrapper() });
+    await expect(result.current.mutateAsync({ instruction: "abc def" })).rejects.toBeInstanceOf(
+      ApiError,
+    );
+  });
+
+  it("modo API: erro do interpret vira ApiError", async () => {
+    flags.useMock = false;
+    postMock.mockResolvedValue({ data: undefined, error: { detail: "ia off" } });
     const { result } = renderHook(() => useGenerateStudioRule(), { wrapper: wrapper() });
     await expect(result.current.mutateAsync({ instruction: "abc" })).rejects.toBeInstanceOf(
       ApiError,

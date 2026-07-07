@@ -3,16 +3,17 @@
 Tarefas para virar issues no GitHub Project. Cada item é acionável. Contexto/padrões em [`HANDOFF.md`](./HANDOFF.md).
 
 ## 🔌 Frontend — ligar telas na API (replicar o padrão)
-Padrão e exemplos (Projetos/Agentes já ligados) em HANDOFF §2. Cada uma: hook em `src/lib/api/*` + `page.tsx` client + estados loading/erro/vazio + `pnpm verify`.
+Padrão e exemplos em HANDOFF §2. Cada uma: hook em `src/lib/api/*` + `page.tsx` client + estados loading/erro/vazio + `pnpm verify`.
 
-- [ ] **Canais** — `GET/POST/PATCH/DELETE /manage/projects/{id}/channels` + `/manage/api-keys`.
-- [ ] **Workspaces** — `GET/POST /manage/workspaces` (padrão flat, igual Projetos).
-- [ ] **Conversas** — `GET /api/v1/conversations` (ver gaps de filtro/paginação).
-- [ ] **Playground** — `POST /api/v1/chat/message` (+ `/chat/message/stream` SSE) + `GET /api/v1/chat/history?session_id=`.
-- [ ] **Faturamento** — `GET /billing/plans`, `POST /purchase|subscribe` (+ histórico quando existir).
-- [ ] **Studio** — `/api/v1/payload-rules` (CRUD + `/reorder` + `/interpret` NL).
-- [ ] **Memória** — `GET/POST /api/v1/users/{id}/profile` + `/memory` (endpoints **já existem**; verificar se cobrem o caso admin).
-- [ ] **Agent Builder** (`/agents/[id]`) — form real (RHF+zod) → `PATCH /manage/projects/{id}/agents/{agentId}` (name, role, instructions, model, temperature, flags).
+- [x] **Canais** — `channels.ts` + `api-keys.ts` (regenerar = POST nova + DELETE antiga; `webhook_token` exibido uma vez). ✅
+- [x] **Workspaces** — `workspaces.ts` (contagem de projetos derivada; members é demo-only). ✅
+- [x] **Conversas** — `conversations.ts` (+ `useChatHistory` p/ o thread real). Assumir/Responder/Resolver seguem **locais** (sem PATCH no backend — ver gaps). ✅
+- [x] **Playground** — `chat.ts`: `useChatSession()` com **streaming SSE** token a token (fetch+ReadableStream) e fallback p/ `POST /chat/message`; debug com tokens/latência reais. ✅
+- [x] **Faturamento** — `billing.ts` (saldo com `X-Org-Id`, planos reais, purchase Pix, subscribe). Histórico continua ilustrativo (sem endpoint). ✅
+- [x] **Studio** — `studio.ts` (CRUD + toggle otimista + `/interpret` NL cria regras reais). ✅
+- [x] **Memória** — config salva via `PATCH /manage/projects/{id}` (estratégias reais do backend em modo API); métricas seguem ilustrativas. ✅
+- [x] **Onboarding/registro** — `register.ts` → `POST /auth/register` (senha no passo 1, key exibida uma vez). ✅
+- [ ] **Agent Builder** (`/agents/[id]`) — form real (RHF+zod) → `PATCH /manage/projects/{id}/agents/{agentId}` (name, role, instructions, model, temperature, flags). O `useToggleAgent` já faz o PATCH de `is_active`.
 
 ## 🛠️ Backend — endpoints que faltam (bloqueiam telas)
 Ver HANDOFF §4. O admin Streamlit acessa o banco direto; o React precisa de API.
@@ -31,12 +32,14 @@ Ver HANDOFF §4. O admin Streamlit acessa o banco direto; o React precisa de API
 
 ## 🔐 Auth (evoluir a referência)
 - [ ] Fluxo de auth definitivo: expiração/refresh de sessão; avaliar **cookie httpOnly** no lugar de localStorage.
-- [ ] Tela de **registro** real ligada a `POST /auth/register` (hoje `/onboarding` é mock).
+- [x] Tela de **registro** real ligada a `POST /auth/register` (senha + key exibida uma vez + sessão autenticada). ✅
 - [ ] Estados de sessão expirada (401 → volta pro `/login`).
+- [ ] Seleção de **projeto no login por org-key** (`agnohub_…` autentica a org; o seletor da topbar já cobre a troca).
 
 ## ✅ Qualidade / infra
 - [ ] **Storybook**: o `storybook init` falhou no ambiente local (Windows/Node25 — módulo nativo `oxc-resolver`). Provável sucesso no CI Linux; adicionar catálogo (o `/handoff` cobre enquanto isso).
-- [ ] Ampliar testes: unit dos mappers de `api/*`; E2E dos fluxos autenticados (com backend de teste).
+- [x] Ampliar testes: unit dos mappers/hooks de `api/*` (153 testes; gate 85%/80% por glob em `api/**`, incluindo o parser SSE). ✅
+- [ ] E2E dos fluxos autenticados (com backend de teste) + `pnpm gen:api` contra o openapi.json real quando o backend estiver de pé.
 - [ ] Observabilidade (erros de API → toast + log).
 - [ ] Conectar o `.github/workflows/ci.yml` (já pronto) ao repositório.
 
@@ -58,12 +61,12 @@ Achados da revisão de design — ver [`DESIGN-HANDOFF.md`](./DESIGN-HANDOFF.md)
 - [ ] Alvos de toque ≥44px: fechar de Dialog/Sheet, `SidebarMenuSubButton`, `SidebarGroupAction`. *(média)*
 
 **Estados faltantes (parte do "ligar a tela" acima):**
-- [ ] loading/erro/vazio em Dashboard, Playground, Canais, Conversas (Projetos/Agentes já têm o padrão de referência). *(média)*
-- [ ] Onboarding multi-step (hoje trava no passo 1). *(baixa)*
+- [x] loading/erro/vazio em Playground, Canais, Conversas, Workspaces, Studio. ✅
+- [ ] loading/erro/vazio em Dashboard (segue mock — depende de `/analytics/*`). *(média)*
 
 **Motion (Fase 2 — parcial):**
 - [x] Vocabulário de motion (`ease-enter/exit/spring`, `animate-rise`) + `EmptyState` + hover-lift nos cards de referência. ✅ (ver `docs/solutions/motion-system.md`)
-- [ ] **Optimistic UI** nos toggles (`is_active` de agente/canal) — precisa de mutations (TanStack Query) wired. *(média)*
+- [x] **Optimistic UI** nos toggles (`is_active` de agente e de regra do Studio) com rollback + toast. ✅
 - [ ] **⌘K command menu** (`cmdk`) p/ ações admin. *(média)*
 - [ ] Aplicar `EmptyState`/hover-lift nas demais telas ao ligá-las.
 

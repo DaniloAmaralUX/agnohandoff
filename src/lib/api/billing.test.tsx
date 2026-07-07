@@ -189,6 +189,21 @@ describe("usePurchasePack / useSubscribePlan", () => {
     expect(order.pix_qr_url).toBe("https://pix");
   });
 
+  it("compra sem pix_qr_url só mostra o toast padrão; erro vira ApiError", async () => {
+    postMock.mockResolvedValueOnce({
+      data: { order_id: "o2", status: "pending" },
+      error: undefined,
+    });
+    const { result } = renderHook(() => usePurchasePack(), { wrapper: wrapper() });
+    const order = await result.current.mutateAsync({ packageId: "pack_500k" });
+    expect(order.pix_qr_url).toBeUndefined();
+
+    postMock.mockResolvedValueOnce({ data: undefined, error: { detail: "sem saldo" } });
+    await expect(result.current.mutateAsync({ packageId: "pack_2m" })).rejects.toBeInstanceOf(
+      ApiError,
+    );
+  });
+
   it("assinatura manda plan_id; erro vira ApiError", async () => {
     postMock.mockResolvedValueOnce({ data: { status: "active", plan: "Pro" }, error: undefined });
     const { result } = renderHook(() => useSubscribePlan(), { wrapper: wrapper() });

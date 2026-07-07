@@ -98,7 +98,7 @@ export default function ConversationsPage() {
   });
 
   const selected = items.find((c) => c.id === selectedId) ?? items[0];
-  const ChannelIcon = (selected && channelIcon[selected.channel]) ?? Globe;
+  const ChannelIcon = channelIcon[selected?.channel ?? ""] ?? Globe;
   const assumida = selected ? assumidas.has(selected.id) : false;
   const resolvida = selected?.status === "Resolvido";
 

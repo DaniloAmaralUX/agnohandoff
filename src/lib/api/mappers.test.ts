@@ -48,12 +48,13 @@ describe("mapApiProject", () => {
       status: "active",
       workspace_id: "ws_atendimento_clinico",
     });
-    expect(view).toEqual({
+    expect(view).toMatchObject({
       id: "prj_1",
       name: "Sofia",
       description: "Triagem",
       status: "Ativo",
       workspace: "ws_atend", // 8 chars
+      workspaceId: "ws_atendimento_clinico", // id completo p/ resolver o nome
     });
   });
 
