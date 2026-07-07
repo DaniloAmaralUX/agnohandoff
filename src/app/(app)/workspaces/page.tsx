@@ -14,6 +14,7 @@ import {
   Radio,
   ArrowUpRight,
   Coins,
+  TriangleAlert,
 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
@@ -39,12 +40,10 @@ import {
   DataTableColumnHeader,
   DataTableFacetedFilter,
 } from "@/components/data-table";
-import {
-  workspaces as seedWorkspaces,
-  projects,
-  type Workspace,
-  type Project,
-} from "@/lib/data";
+import { useWorkspaces, useCreateWorkspace } from "@/lib/api/workspaces";
+import { useProjects, type ProjectView } from "@/lib/api/projects";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/bits";
 import { FormSheet } from "@/components/form-sheet";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -81,7 +80,7 @@ function toneFor(id: string) {
 }
 
 /* Colunas da tabela de projetos (DataTable — sort/busca/filtro/paginação). */
-const projectColumns: ColumnDef<Project>[] = [
+const projectColumns: ColumnDef<ProjectView>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -117,7 +116,8 @@ const projectColumns: ColumnDef<Project>[] = [
     cell: ({ row }) => (
       <span className="inline-flex items-center gap-1 text-[13px] text-muted-foreground">
         <Bot className="size-3.5" />
-        <span className="font-mono tabular">{row.original.agents}</span>
+        {/* API ainda não agrega contagens — "—" honesto (gap no HANDOFF). */}
+        <span className="font-mono tabular">{row.original.agents ?? "—"}</span>
       </span>
     ),
   },
@@ -129,7 +129,7 @@ const projectColumns: ColumnDef<Project>[] = [
     cell: ({ row }) => (
       <span className="inline-flex items-center gap-1 text-[13px] text-muted-foreground">
         <Radio className="size-3.5" />
-        <span className="font-mono tabular">{row.original.channels}</span>
+        <span className="font-mono tabular">{row.original.channels ?? "—"}</span>
       </span>
     ),
   },
@@ -162,7 +162,28 @@ const projectColumnLabels = {
 };
 
 export default function WorkspacesPage() {
-  const [items, setItems] = useState<Workspace[]>(seedWorkspaces);
+  const { data, isLoading, isError, refetch } = useWorkspaces();
+  const createWorkspace = useCreateWorkspace();
+  const { data: projData } = useProjects();
+  const items = data ?? [];
+  const projectItems = projData ?? [];
+  const isEmpty = !isLoading && !isError && items.length === 0;
+
+  // Nome do workspace por id — em modo API a tabela mostra o nome real,
+  // não o id truncado; e a contagem de projetos é derivada da lista.
+  const wsNameById = new Map(items.map((w) => [w.id, w.name]));
+  const tableProjects = projectItems.map((p) => ({
+    ...p,
+    workspace:
+      (p.workspaceId ? wsNameById.get(p.workspaceId) : undefined) ?? p.workspace,
+  }));
+  const projCountByWs = new Map<string, number>();
+  for (const p of projectItems) {
+    if (p.workspaceId) {
+      projCountByWs.set(p.workspaceId, (projCountByWs.get(p.workspaceId) ?? 0) + 1);
+    }
+  }
+
   const [open, setOpen] = useState(false);
   const form = useForm<NewWorkspaceForm>({
     resolver: standardSchemaResolver(newWorkspaceSchema),
@@ -170,19 +191,7 @@ export default function WorkspacesPage() {
   });
 
   const onSubmit = form.handleSubmit((values) => {
-    setItems((prev) => [
-      {
-        id: `ws_${Date.now()}`,
-        name: values.name,
-        description: values.description ?? "",
-        projects: 0,
-        members: 1,
-      },
-      ...prev,
-    ]);
-    toast.success("Workspace criado.", {
-      description: "Adicione projetos e convide sua equipe.",
-    });
+    createWorkspace.mutate(values);
     form.reset();
     setOpen(false);
   });
@@ -205,7 +214,7 @@ export default function WorkspacesPage() {
           title="Novo workspace"
           description="Um espaço para agrupar projetos, equipe e custos."
           submitLabel="Criar workspace"
-          submitting={form.formState.isSubmitting}
+          submitting={createWorkspace.isPending}
           onSubmit={onSubmit}
         >
           <Field data-invalid={!!form.formState.errors.name}>
@@ -241,8 +250,50 @@ export default function WorkspacesPage() {
 
         {/* ── Workspaces ─────────────────────────────────────────── */}
         <TabsContent value="workspaces" className="mt-4">
+          {isError && (
+            <div className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-crimson/30 bg-crimson/5 px-4 py-3">
+              <div className="flex items-center gap-2 text-[13px] text-foreground">
+                <TriangleAlert className="size-4 text-crimson" />
+                Não foi possível carregar os workspaces da API.
+              </div>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Tentar de novo
+              </Button>
+            </div>
+          )}
+          {isEmpty && (
+            <EmptyState
+              icon={FolderKanban}
+              title="Nenhum workspace ainda"
+              description="Crie o primeiro workspace para agrupar projetos e equipe."
+              action={
+                <Button
+                  size="sm"
+                  className="bg-heat text-heat-foreground hover:bg-heat-hover"
+                  onClick={() => setOpen(true)}
+                >
+                  <Plus data-icon="inline-start" />
+                  Novo workspace
+                </Button>
+              }
+            />
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((ws, i) => (
+            {isLoading &&
+              Array.from({ length: 2 }).map((_, i) => (
+                <Card key={`sk-${i}`} className="h-[220px] gap-0">
+                  <CardHeader>
+                    <Skeleton className="size-9 rounded-md" />
+                    <Skeleton className="mt-3 h-4 w-32" />
+                    <Skeleton className="mt-2 h-3 w-full" />
+                  </CardHeader>
+                  <CardContent className="mt-auto pt-2">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="mt-4 h-8 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            {!isLoading && items.map((ws, i) => (
               /* Sem hover-lift: card não é clicável (achado usability — evita
                  assinatura enganosa de "sou clicável"). */
               <Card key={ws.id} className="gap-0">
@@ -276,17 +327,23 @@ export default function WorkspacesPage() {
                       className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
                     >
                       <FolderKanban className="size-3" />
-                      <span className="tabular">{ws.projects}</span>{" "}
-                      {plural(ws.projects, "projeto")}
+                      {/* Mock traz a contagem; em modo API deriva da lista de projetos. */}
+                      <span className="tabular">
+                        {ws.projects ?? projCountByWs.get(ws.id) ?? 0}
+                      </span>{" "}
+                      {plural(ws.projects ?? projCountByWs.get(ws.id) ?? 0, "projeto")}
                     </Badge>
-                    <Badge
-                      variant="outline"
-                      className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
-                    >
-                      <Users className="size-3" />
-                      <span className="tabular">{ws.members}</span>{" "}
-                      {plural(ws.members, "membro")}
-                    </Badge>
+                    {/* Members só existe no mock — a API não expõe (gap no HANDOFF). */}
+                    {ws.members != null && (
+                      <Badge
+                        variant="outline"
+                        className="gap-1 border-border text-[11px] font-normal text-muted-foreground"
+                      >
+                        <Users className="size-3" />
+                        <span className="tabular">{ws.members}</span>{" "}
+                        {plural(ws.members, "membro")}
+                      </Badge>
+                    )}
                   </div>
                   {/* "Abrir" rebaixado a outline: fill Heat fica reservado ao
                       único CTA de página (achado hierarchy). */}
@@ -309,7 +366,7 @@ export default function WorkspacesPage() {
         <TabsContent value="projetos" className="mt-4">
           <DataTable
             columns={projectColumns}
-            data={projects}
+            data={tableProjects}
             searchColumn="name"
             searchPlaceholder="Buscar projeto…"
             columnLabels={projectColumnLabels}
@@ -319,7 +376,7 @@ export default function WorkspacesPage() {
                 <DataTableFacetedFilter
                   column={table.getColumn("workspace")}
                   title="Workspace"
-                  options={seedWorkspaces.map((w) => ({
+                  options={items.map((w) => ({
                     label: w.name,
                     value: w.name,
                   }))}

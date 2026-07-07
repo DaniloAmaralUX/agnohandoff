@@ -20,6 +20,8 @@ export type ProjectView = {
   description: string;
   status: "Ativo" | "Rascunho" | "Pausado" | string;
   workspace: string;
+  /** Id completo do workspace — permite resolver o nome via useWorkspaces. */
+  workspaceId?: string;
   agents?: number;
   channels?: number;
 };
@@ -40,6 +42,7 @@ export function mapApiProject(p: ApiProject): ProjectView {
     description: p.description ?? "",
     status: STATUS_PT[status] ?? status,
     workspace: (p.workspace_id ?? "—").slice(0, 8),
+    workspaceId: p.workspace_id ?? undefined,
   };
 }
 
@@ -50,6 +53,7 @@ function fromMock(): ProjectView[] {
     description: p.description,
     status: p.status,
     workspace: p.workspace,
+    workspaceId: p.workspaceId,
     agents: p.agents,
     channels: p.channels,
   }));
