@@ -42,6 +42,18 @@ export function statusDot(status: string): string {
   return STATUS_DOT[status] ?? STATUS_DOT_DEFAULT;
 }
 
+/* Namespace de status de ORGANIZAÇÃO (#119): "Ativo" de org significa
+   assinatura saudável (forest), não "em atividade" como projeto (bluetron);
+   "Suspenso" caía no cinza default sem alarme. Mapa próprio evita o conflito. */
+export const ORG_STATUS_DOT: Record<string, string> = {
+  Ativo: "text-forest-text",
+  Suspenso: "text-crimson",
+};
+
+export function orgStatusDot(status: string): string {
+  return ORG_STATUS_DOT[status] ?? STATUS_DOT_DEFAULT;
+}
+
 /* Chips/avatares tonalizados: fundo vivo (tint) + texto na variante -text
    (WCAG AA). Consumido por bits.tsx (ToneAvatar) e pelas telas via toneMap. */
 export const TONE: Record<string, string> = {

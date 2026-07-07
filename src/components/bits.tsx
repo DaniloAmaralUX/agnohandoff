@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Circle } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Circle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { statusDot, TONE } from "@/lib/constants";
 
@@ -49,6 +50,56 @@ export function ToneAvatar({
     >
       {children}
     </div>
+  );
+}
+
+/* Linha de KPIs (#125): as 3 anatomias divergentes do app viram UMA.
+   Valor em Geist Mono tabular (#124 — número-herói nunca em Fraunces);
+   delta verde só quando sobe (cor semântica de TEXTO, não dot). */
+export function StatCard({
+  label,
+  value,
+  delta,
+  trend,
+  hint,
+  className,
+}: {
+  label: string;
+  value: string;
+  delta?: string;
+  trend?: "up" | "down";
+  hint?: string;
+  className?: string;
+}) {
+  return (
+    <Card className={cn("gap-0 py-4", className)}>
+      <CardContent className="px-4">
+        <p className="text-[13px] text-muted-foreground">{label}</p>
+        <p className="mt-2 font-mono text-2xl font-semibold tracking-tight tabular">
+          {value}
+        </p>
+        {(delta || hint) && (
+          <div className="mt-2 flex items-center gap-1.5 text-[12px]">
+            {delta && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-0.5 font-medium",
+                  trend === "up" ? "text-forest-text" : "text-muted-foreground",
+                )}
+              >
+                {trend === "up" ? (
+                  <ArrowUpRight className="size-3.5" />
+                ) : (
+                  <ArrowDownRight className="size-3.5" />
+                )}
+                {delta}
+              </span>
+            )}
+            {hint && <span className="text-muted-foreground">{hint}</span>}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

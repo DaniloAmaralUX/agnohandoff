@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { statusDot, STATUS_DOT, STATUS_DOT_DEFAULT, TONE } from "./constants";
+import { orgStatusDot, statusDot, STATUS_DOT, STATUS_DOT_DEFAULT, TONE } from "./constants";
+import { initials } from "./utils";
 import { statusDot as statusDotFromBits, TONE as TONE_FROM_BITS } from "@/components/bits";
 
 /* Regressão do bug latente: antes cada tela tinha seu próprio statusDot() com
@@ -62,5 +63,36 @@ describe("TONE (mapa canônico de tons)", () => {
 
   it("bits.tsx re-exporta o mesmo mapa TONE", () => {
     expect(TONE_FROM_BITS).toBe(TONE);
+  });
+});
+
+/* #119: status de ORG tem namespace próprio — "Ativo" de org (assinatura
+   saudável → forest) não é o "Ativo" de projeto (em atividade → bluetron). */
+describe("orgStatusDot (namespace de organização)", () => {
+  it("Ativo de org é forest (não o bluetron de projeto)", () => {
+    expect(orgStatusDot("Ativo")).toBe("text-forest-text");
+    expect(statusDot("Ativo")).toBe("text-bluetron-text");
+  });
+  it("Suspenso alarma em crimson (antes caía no cinza default)", () => {
+    expect(orgStatusDot("Suspenso")).toBe("text-crimson");
+  });
+  it("desconhecido cai no mesmo default neutro", () => {
+    expect(orgStatusDot("qualquer")).toBe(STATUS_DOT_DEFAULT);
+  });
+});
+
+/* #128: iniciais de avatar SEMPRE 2 letras maiúsculas, uma regra só. */
+describe("initials (canônico)", () => {
+  it("duas palavras → 1ª letra de cada, maiúsculas", () => {
+    expect(initials("Maria Oliveira")).toBe("MO");
+    expect(initials("joão santos")).toBe("JS");
+  });
+  it("uma palavra → 2 primeiras letras maiúsculas", () => {
+    expect(initials("Sofia")).toBe("SO");
+    expect(initials("léo")).toBe("LÉ");
+  });
+  it("ignora espaços extras e vazio", () => {
+    expect(initials("  Ana   Costa  ")).toBe("AC");
+    expect(initials("")).toBe("");
   });
 });
