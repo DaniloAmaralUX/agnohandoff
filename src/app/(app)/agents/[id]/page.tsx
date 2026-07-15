@@ -10,7 +10,12 @@ import {
 
 import { agents, tools, channels } from "@/lib/data";
 import { initials } from "@/lib/utils";
-import { BuilderActions, PreviewChat } from "./builder-bits";
+import {
+  BuilderActions,
+  BuilderFormSection,
+  BuilderProvider,
+  PreviewChat,
+} from "./builder-bits";
 import { StatusBadge, ToneAvatar } from "@/components/bits";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +73,7 @@ export default async function AgentBuilder({
   const agent = agents.find((a) => a.id.slice(4) === id) ?? agents[0];
 
   return (
+    <BuilderProvider>
     <div className="mx-auto w-full max-w-[1240px] px-4 py-5 sm:px-6">
       {/* ── Cabeçalho do builder ─────────────────────────────────── */}
       <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -100,7 +106,8 @@ export default async function AgentBuilder({
 
       {/* ── Corpo: config + prévia ───────────────────────────────── */}
       <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_400px]">
-        {/* Coluna de config */}
+        {/* Coluna de config — remontável: "Descartar" restaura os defaults */}
+        <BuilderFormSection>
         <Tabs defaultValue="instrucoes" className="gap-4">
           <TabsList variant="line" className="w-full justify-start gap-4 border-b border-border">
             <TabsTrigger value="instrucoes">
@@ -311,6 +318,7 @@ export default async function AgentBuilder({
             </Card>
           </TabsContent>
         </Tabs>
+        </BuilderFormSection>
 
         {/* Coluna de prévia ao vivo */}
         <div className="lg:sticky lg:top-[72px] lg:self-start">
@@ -347,5 +355,6 @@ export default async function AgentBuilder({
         </div>
       </div>
     </div>
+    </BuilderProvider>
   );
 }
