@@ -336,7 +336,7 @@ export default function PlaygroundPage() {
                     </Label>
                     <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-2.5 py-1.5">
                       <span className="truncate font-mono text-[12px] text-foreground">
-                        {chat.sessionId}
+                        {chat.sessionId || "—"}
                       </span>
                       <Circle className="size-2 shrink-0 fill-current text-forest-text" />
                     </div>
