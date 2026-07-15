@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROUTE_LABELS } from "@/components/app-sidebar";
+import { useQueryClient } from "@tanstack/react-query";
 import { clearApiKey } from "@/lib/auth";
 import { useActiveProject } from "@/lib/project-context";
 
@@ -50,6 +51,7 @@ function humanize(seg: string) {
 export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const parts = pathname.split("/").filter(Boolean);
   const seg = parts[0] ?? "dashboard";
   const label = ROUTE_LABELS[seg] ?? humanize(seg);
@@ -125,7 +127,14 @@ export function Topbar() {
 
         {/* Conta do usuário — canto superior direito (padrão Vercel/Linear).
             A organização permanece na sidebar (contexto de navegação). */}
-        <AccountMenu onSignOut={() => { clearApiKey(); router.push("/login"); }} />
+        <AccountMenu
+          onSignOut={() => {
+            clearApiKey();
+            // Sem isso, a próxima sessão (outra chave) veria o cache anterior.
+            queryClient.clear();
+            router.push("/login");
+          }}
+        />
       </div>
     </header>
   );

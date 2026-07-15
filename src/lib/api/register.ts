@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
 import { USE_MOCK } from "@/lib/config";
 import { setApiKey } from "@/lib/auth";
@@ -18,6 +18,7 @@ export type RegisteredView = {
 };
 
 export function useRegister() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
       name: string;
@@ -57,6 +58,8 @@ export function useRegister() {
     onSuccess: (created) => {
       // Sessão já autenticada — a tela de sucesso exibe a chave uma vez.
       setApiKey(created.apiKey);
+      // Isola a conta recém-criada de qualquer cache anterior.
+      queryClient.clear();
     },
   });
 }
