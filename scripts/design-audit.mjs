@@ -76,6 +76,17 @@ const scaleZero = scan("(zoom-in-0|scale-0)[\\s\"']", (f) => /\.tsx$/.test(f));
 // semântico VIVO usado como texto (deveria ser -text). crimson já é AA (sem -text) → fora.
 const semColor = scan("text-(forest|honey|amethyst|bluetron)\\b(?!-text)", (f) => /\.tsx$/.test(f));
 
+/* 6. Anti-regressão (craft 2026-07-15) */
+// Larguras fixas grandes em classe arbitrária — risco de overflow em 390px
+const fixedWide = scan("(?:min-)?w-\\[(\\d{3,})px\\]", (f, m) => /\.tsx$/.test(f) && Number(m[1]) >= 390);
+// Aleatoriedade no inicializador de useState — hydration mismatch (SSR≠cliente)
+const randomInit = scan("useState[^\\n]*\\(\\s*\\(\\)\\s*=>[^\\n]*(Math\\.random|Date\\.now|crypto\\.randomUUID)", (f) => /\.tsx?$/.test(f));
+// Toast que alega persistência em contexto de demo (heurístico por palavras)
+const fakePersist = scan(
+  "toast\\.(success|info)\\([^)]*(salvo no servidor|persistid|gravad[oa] no banco)",
+  (f) => /\.tsx?$/.test(f),
+);
+
 const checks = [
   { key: "hex", label: "Hex hardcoded (usar token)", count: hex.length, samples: hex.slice(0, 6), note: "quase zero — migração OKLCH" },
   { key: "transition-all", label: "`transition: all` (listar props)", count: transAll.length, samples: transAll.slice(0, 6), note: "inclui defaults do shadcn" },
@@ -86,6 +97,9 @@ const checks = [
   { key: "ease-in", label: "`ease-in` em UI (proibido)", count: easeIn.length, samples: easeIn.slice(0, 6), note: "CRAFT.md §2" },
   { key: "slow-ui", label: "Duração de UI > 300ms", count: slowUI.length, samples: slowUI.slice(0, 6), note: "CRAFT.md §3" },
   { key: "scale-zero", label: "Entrada de scale(0)/zoom-in-0", count: scaleZero.length, samples: scaleZero.slice(0, 6), note: "CRAFT.md §4" },
+  { key: "fixed-wide", label: "Largura fixa ≥390px (risco mobile)", count: fixedWide.length, samples: fixedWide.slice(0, 6), note: "e2e mobile pega em runtime" },
+  { key: "random-init", label: "Random/Date em init de useState (hydration)", count: randomInit.length, samples: randomInit.slice(0, 6) },
+  { key: "fake-persist", label: "Toast que alega persistência (demo honesta)", count: fakePersist.length, samples: fakePersist.slice(0, 6), note: "heurístico" },
 ];
 
 const out = { generatedAt: new Date().toISOString(), checks };
