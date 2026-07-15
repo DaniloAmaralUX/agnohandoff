@@ -1,8 +1,8 @@
 # AgnoHub — Handoff para os devs (painel React)
 
-Este é o guia técnico do handoff. O **frontend de produção** está pronto (design system + todas as telas + o **padrão de integração com a API**, com **11 telas ligadas de verdade**: Projetos, Agentes, Workspaces, Canais + API Keys, Conversas, Playground com streaming SSE, Memória, Faturamento, Studio, Login e Onboarding/registro). Aqui está o que resta para **finalizar a integração** e o que o **backend precisa expor**.
+Este é o guia técnico do handoff de um **protótipo avançado React com integração inicial** — design system completo, todas as telas, e o padrão de integração com a API estabelecido, com parte das telas já consumindo o backend real. **O estado exato de cada tela (Ligada/Parcial/Mock) vive em [`STATUS.md`](./STATUS.md)** — este documento explica a arquitetura, o que resta para finalizar a integração e o que o backend precisa expor.
 
-- Documentação de design (viva): rota **`/design`** · Fluxos: **`/fluxos`** · Setup/scripts: **`README.md`** · Board: **`ISSUES.md`**
+- Status por tela: **`STATUS.md`** · Documentação de design (viva): rota **`/design`** · Fluxos: **`/fluxos`** · Setup/scripts: **`README.md`** · Board: **`ISSUES.md`**
 - Design source = o **código** (tokens em `src/app/globals.css`).
 
 ---
@@ -110,6 +110,20 @@ Endpoints ausentes hoje (o admin Streamlit acessa o banco direto; o React precis
 
 ## 5. Auth (referência)
 `/login` valida a chave em `GET /api/v1/project/info`; ok → `setApiKey` + redirect; erro → aviso. `AuthGuard` (`src/components/auth-guard.tsx`) barra rotas **só em modo API**. Logout na sidebar. **Estender** para o fluxo definitivo (expiração/refresh, talvez cookie httpOnly em vez de localStorage). Ver `ISSUES.md`.
+
+---
+
+## 5.1 Decisões arquiteturais e riscos conhecidos (leia antes de estender)
+
+Decisões conscientes do protótipo que o dev deve **revisitar** antes de produção:
+
+| Decisão | Risco | Recomendação |
+|---|---|---|
+| **Sessão = X-API-Key em `localStorage`** (`src/lib/auth.ts`) — espelha o modelo do admin Streamlit | XSS pode exfiltrar a chave; chave de projeto funciona como login administrativo | Migrar para cookie httpOnly + expiração/refresh; separar papel administrativo de chave de integração |
+| **Cache TanStack global, sem isolamento por conta** (`src/lib/api/query-provider.tsx`) | Trocar de chave pode exibir dados da sessão anterior até o refetch | Limpar o cache (`queryClient.clear()`) no logout/login/registro; em produção, incluir a identidade na `queryKey` ou recriar o client por sessão |
+| **401 não encerra a sessão automaticamente** | Sessão inválida continua exibindo cache até o usuário navegar | Handler global de 401 → limpar chave + redirect `/login`; fluxo definitivo de expiração no `ISSUES.md §Auth` |
+| **Dual-mode `USE_MOCK`** (`src/lib/config.ts`) — demo sem backend é feature, não gambiarra | Tela pode "parecer" persistir; toasts explicitam "demo" | Manter até o fim da integração; specs em `docs/solutions/mock-api-dual-mode.md` |
+| **"Super Admin" sem controle de papel** (`/super-admin`, fora do AuthGuard) | Qualquer pessoa com o link vê a tela (dados mock) | Não ligar em dados reais antes de existir RBAC no backend |
 
 ---
 

@@ -2,7 +2,7 @@
 
 Specs de design para os devs: tokens, componentes, estados, responsivo, edge cases e acessibilidade. Complementa o [`HANDOFF.md`](./HANDOFF.md) (arquitetura + contrato de API). Fonte única de estilo = `src/app/globals.css`; documentação de design viva = rota `/design`.
 
-> **Estado (atual):** todas as telas de produto **funcionam com dados mock read-only** — cada CTA/form/toggle responde (abre sheet, valida, faz add otimista + toast, navega). Sem persistência real (reseta no reload) — é o modo demo. O dev liga a API real trocando o `mutationFn`/`fromMock` por chamadas HTTP (ver `HANDOFF.md §2`); com `NEXT_PUBLIC_API_URL` definido, o app entra em **modo API**.
+> **Estado (atual):** todas as telas de produto **funcionam com dados mock read-only** no modo demo — cada CTA/form/toggle responde (abre sheet, valida, faz add otimista + toast, navega), sem persistência (reseta no reload). Com `NEXT_PUBLIC_API_URL` definido, o app entra em **modo API** — o estado de integração de cada tela (Ligada/Parcial/Mock) vive em **[`STATUS.md`](./STATUS.md)**, a fonte única. Como ligar uma tela: `HANDOFF.md §2`.
 
 > Contraste desta seção foi **recalculado à mão** (WCAG 2). Ajustes de token são **decisão do designer** (fase de design) — ver `ISSUES.md`.
 
@@ -194,35 +194,35 @@ Texto normal exige ≥ 4.5:1; texto grande/bold e componentes de UI ≥ 3:1.
 
 ## 8. Inventário de telas (23)
 
-Legenda — **API?** ✓ = consome a API real quando em modo API; ✗ = só mock. Estados: L(oading) / E(rro) / V(azio). **Interação:** todas as telas abaixo têm os fluxos ligados no mock (criar/salvar/alternar/navegar respondem — ver §4).
+Legenda — Estados: L(oading) / E(rro) / V(azio). **Interação:** todas as telas abaixo têm os fluxos ligados no mock (criar/salvar/alternar/navegar respondem — ver §4). **Status de integração com a API: ver [`STATUS.md`](./STATUS.md)** (a coluna "API?" foi removida daqui para não haver duas fontes de verdade).
 
-| # | Tela | Propósito | Estados | API? | Arquivo |
-|---|------|-----------|---------|------|---------|
-| 1 | Dashboard | KPIs das últimas 24h | happy (falta L/E/V) | ✗ | `(app)/dashboard/page.tsx` |
-| 2 | **Projetos** | Listar/criar projetos | **L/E/V** ✓ | ✓ | `(app)/projects/page.tsx` |
-| 3 | **Agentes** | Listar agentes + métricas | **L/E/V** ✓ | ✓ | `(app)/agents/page.tsx` |
-| 4 | Agent Builder | Editor: instruções/modelo/tools/memória + preview | happy (falta saving/validação) | ✓ | `(app)/agents/[id]/page.tsx` |
-| 5 | Canais | WhatsApp/Web/Telegram/Instagram + keys | happy | ✗ | `(app)/channels/page.tsx` |
-| 6 | Conversas | Inbox unificado (lista + chat) + filtros | happy/vazio | ✗ | `(app)/conversations/page.tsx` |
-| 7 | Playground | Chat de teste + config + debug | happy (falta L de envio) | ✗ | `(app)/playground/page.tsx` |
-| 8 | Workspaces | Workspaces + projetos + custos | happy | ✗ (mock) | `(app)/workspaces/page.tsx` |
-| 9 | Analytics | Métricas, conversas/dia, top agentes | happy | ✗ | `(app)/analytics/page.tsx` |
-| 10 | Faturamento | Créditos, planos, compra, histórico | happy | ✗ | `(app)/billing/page.tsx` |
-| 11 | Integrações | GitHub (PAT/repos) + futuras | happy | ✗ | `(app)/integrations/page.tsx` |
-| 12 | MCP | Registrar servidores MCP + status | happy | ✗ | `(app)/mcp/page.tsx` |
-| 13 | Memória | Estratégia/contexto/retenção/embeddings | happy | ✗ | `(app)/memory/page.tsx` |
-| 14 | Studio | Regras YAML de payload via linguagem natural | happy | ✗ | `(app)/studio/page.tsx` |
-| 15 | Ferramentas | Tools (MCP/Python/HTTP) + Knowledge Base | happy | ✗ | `(app)/tools/page.tsx` |
-| 16 | Configurações | Plano, BYOK, org, performance | happy | ✗ | `(app)/settings/page.tsx` |
-| 17 | Deploy | Status/modos de deploy (aguarda `/deploy/*`) | happy | ✗ | `(app)/deploy/page.tsx` |
-| 18 | Landing | Apresentação pública + CTA | estática | ✗ | `page.tsx` |
-| 19 | Login | Auth por API key | happy/erro | ✗* | `login/page.tsx` |
-| 20 | Onboarding | Criar organização (multi-step) | 4 passos funcionais (avança/volta/valida) | ✗ | `onboarding/page.tsx` + `onboarding-flow.tsx` |
-| 21 | Super Admin | Métricas da plataforma + orgs | happy | ✗ | `super-admin/page.tsx` |
-| 22 | Design System | Catálogo vivo (tokens/componentes) | estática | ✗ | `handoff/page.tsx` |
-| 23 | Fluxos | Roteiros de teste navegáveis | hover | ✗ | `fluxos/page.tsx` |
+| # | Tela | Propósito | Estados | Arquivo |
+|---|------|-----------|---------|---------|
+| 1 | Dashboard | KPIs das últimas 24h | happy (falta L/E/V) | `(app)/dashboard/page.tsx` |
+| 2 | **Projetos** | Listar/criar projetos | **L/E/V** ✓ | `(app)/projects/page.tsx` |
+| 3 | **Agentes** | Listar agentes + métricas | **L/E/V** ✓ | `(app)/agents/page.tsx` |
+| 4 | Agent Builder | Editor: instruções/modelo/tools/memória + preview | happy (falta saving/validação) | `(app)/agents/[id]/page.tsx` |
+| 5 | Canais | WhatsApp/Web/Telegram/Instagram + keys | happy | `(app)/channels/page.tsx` |
+| 6 | Conversas | Inbox unificado (lista + chat) + filtros | happy/vazio | `(app)/conversations/page.tsx` |
+| 7 | Playground | Chat de teste + config + debug | happy (falta L de envio) | `(app)/playground/page.tsx` |
+| 8 | Workspaces | Workspaces + projetos + custos | happy | `(app)/workspaces/page.tsx` |
+| 9 | Analytics | Métricas, conversas/dia, top agentes | happy | `(app)/analytics/page.tsx` |
+| 10 | Faturamento | Créditos, planos, compra, histórico | happy | `(app)/billing/page.tsx` |
+| 11 | Integrações | GitHub (PAT/repos) + futuras | happy | `(app)/integrations/page.tsx` |
+| 12 | MCP | Registrar servidores MCP + status | happy | `(app)/mcp/page.tsx` |
+| 13 | Memória | Estratégia/contexto/retenção/embeddings | happy | `(app)/memory/page.tsx` |
+| 14 | Studio | Regras YAML de payload via linguagem natural | happy | `(app)/studio/page.tsx` |
+| 15 | Ferramentas | Tools (MCP/Python/HTTP) + Knowledge Base | happy | `(app)/tools/page.tsx` |
+| 16 | Configurações | Plano, BYOK, org, performance | happy | `(app)/settings/page.tsx` |
+| 17 | Deploy | Status/modos de deploy (aguarda `/deploy/*`) | happy | `(app)/deploy/page.tsx` |
+| 18 | Landing | Apresentação pública + CTA | estática | `page.tsx` |
+| 19 | Login | Auth por API key | happy/erro | `login/page.tsx` |
+| 20 | Onboarding | Criar organização (multi-step) | 4 passos funcionais (avança/volta/valida) | `onboarding/page.tsx` + `onboarding-flow.tsx` |
+| 21 | Super Admin | Métricas da plataforma + orgs | happy | `super-admin/page.tsx` |
+| 22 | Design System | Catálogo vivo (tokens/componentes) | estática | `handoff/page.tsx` |
+| 23 | Fluxos | Roteiros de teste navegáveis | hover | `fluxos/page.tsx` |
 
-\* Login valida a chave contra a API quando em modo API; landing/login/onboarding/super-admin ficam **fora** do grupo `(app)` (sem AuthGuard/sidebar).
+\* Landing/login/onboarding/super-admin ficam **fora** do grupo `(app)` (sem AuthGuard/sidebar). Integração por tela: `STATUS.md`.
 
 ---
 
