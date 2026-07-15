@@ -2,7 +2,7 @@
 
 > **Posicionamento:** este repositório é um **protótipo avançado React com integração inicial ao backend**. NÃO é um frontend de produção. Toda tela funciona em **modo demo** (mock, sem persistência); a coluna abaixo descreve o comportamento em **modo API**.
 >
-> **Frontend:** branch `claude/determined-gauss-sgvjcs` (2026-07-15) · **Backend de referência:** `clvschaves/agnohub` — SHA: _pendente de validação (ver §Validação)_.
+> **Frontend:** branch `claude/determined-gauss-sgvjcs` (2026-07-15) · **Backend de referência:** `clvschaves/agnohub` — SHA: _a fixar pelo dev com acesso ao repo_; contrato validado contra o `schema.ts` gerado do OpenAPI real em 2026-07-07 (ver §Validação).
 
 **Como esta tabela foi derivada (método):** para cada rota, inspecionamos os hooks de `src/lib/api/*.ts` usados pela página — existência de ramo API real (`api.GET/POST/PATCH/DELETE`), mutações reais vs. `toast` local, e tratamento de loading/erro/vazio. Vereditos vêm do código, não de intenção. Ao mudar uma tela, **atualize esta tabela no mesmo PR**.
 
@@ -37,16 +37,21 @@
 | `/fluxos` | Mock | — | Roteiros estáticos |
 | `/handoff` | Mock | — | Redirect para `/design` |
 
-## Validação contra o backend (⚠ pendências)
+## Validação de contrato (feita contra `src/lib/api/schema.ts`)
 
-Suspeitas de contrato levantadas por inspeção do frontend — a confirmar/refutar contra o código do backend (`clvschaves/agnohub`), com arquivo:linha dos dois lados:
+**Fonte:** `schema.ts` é gerado do `/openapi.json` do backend real (`pnpm gen:api`); último regen em **2026-07-07** (data do commit). É o melhor retrato do contrato disponível neste repositório. **Ação do dev:** com acesso a `clvschaves/agnohub`, fixar o SHA do backend aqui e re-rodar `pnpm gen:api` para revalidar.
 
-1. `useToggleStudioRule` faz `PUT /payload-rules/{id}` com body parcial `{ is_active }` (`src/lib/api/studio.ts`) — backend aceita PUT parcial?
-2. Billing autentica por header `X-Org-Id` (`src/lib/api/billing.ts`) — confirmar contrato de auth por org.
-3. `useCreateChannel` envia `session_strategy: "user_per_day"` fixo e mapeia `channel_type` de rótulos PT; Instagram só existe no mock (`src/lib/api/channels.ts`) — validar enum e default.
-4. SSE do chat: shape `token`/`done`/`[DONE]` e fallback silencioso (`src/lib/api/chat.ts`) — validar contra o emissor real.
-5. `GET /conversations`: schema tolera resposta sem lista (`.nullish()` + `?? []` em `src/lib/api/schemas.ts`) — resposta 200 sem a chave viraria lista vazia silenciosa; confirmar shape real (status/preview).
-6. `POST /auth/register`: payload envia só `name/email/password/org_name` (`src/lib/api/register.ts`) — confirmar quais campos o backend aceita (workspace/agente/canal do onboarding).
+| # | Suspeita | Veredito | Evidência |
+|---|---|---|---|
+| 1 | `PUT /payload-rules/{id}` com body parcial `{is_active}` | ✅ **Refutada** — todos os campos de `PayloadRuleUpdate` são opcionais | `schema.ts:1215-1234` × `studio.ts:78-79` |
+| 2 | Billing por header `X-Org-Id` | ✅ **Refutada** — header é parâmetro obrigatório das 3 rotas no contrato | `schema.ts:2461-2573` × `billing.ts:73,133,169` |
+| 3 | `channel_type` de rótulos PT / Instagram | ⚠ **Confirmada em parte** — `channel_type` é string livre (sem enum); "instagram" passa no tipo mas não tem cobertura declarada; `session_strategy` fixo coincide com o default do contrato | `schema.ts:928-933` × `channels.ts:41-46,119` |
+| 4 | Shape dos eventos SSE do chat | ◻ **Indecidível pelo contrato** — rota existe, mas response é `unknown` (OpenAPI não modela event-stream); shape `token`/`done` vive só no frontend | `schema.ts:1568,1587` × `chat.ts:54-59` |
+| 5 | `GET /conversations` esconde erro via `.nullish()` | ◻ **Indecidível** — response 200 é `unknown` no contrato; opcionalidade e campos de status/preview são convenção defensiva do frontend, não garantia | `schema.ts:1745-1766` × `schemas.ts:133-150` |
+| 6 | Onboarding coleta dados que o register ignora | ⚠ **Confirmada** — `RegisterRequest` aceita só `name/email/password/org_name`; passos Workspace/Agente/Canal exigem chamadas separadas pós-registro | `schema.ts:1336-1345` × `register.ts:38-43` |
+| 7 | `project_id` nas API keys | ✅ POST **exige** `project_id`; ◻ na listagem a response é `unknown` — presença por item é inferência do frontend | `schema.ts:832-837,2336` × `api-keys.ts:75` |
+
+**Implicações registradas no backlog:** onboarding completo = orquestrar `/manage/workspaces` + `.../agents` + `.../channels` após o register (US no `docs/BACKLOG.md`); tipar as respostas `unknown` no OpenAPI do backend é gap prioritário (conversations, api-keys).
 
 ## Divisão de responsabilidade das docs
 
