@@ -1,11 +1,85 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Rocket, Wrench, Send, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { playgroundThread, type ChatMessage } from "@/lib/data";
+
+/* Contexto que liga as ações do cabeçalho (Descartar/Publicar) à seção do
+   formulário: "Descartar" remonta a seção (inputs não-controlados voltam aos
+   defaults) e "Publicar" captura os valores atuais como novos defaults. */
+type BuilderResetCtx = {
+  version: number;
+  reset: () => void;
+  capturePublished: () => void;
+  registerSection: (el: HTMLDivElement | null) => void;
+};
+const BuilderResetContext = createContext<BuilderResetCtx | null>(null);
+
+export function BuilderProvider({ children }: { children: React.ReactNode }) {
+  const [version, setVersion] = useState(0);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
+
+  const ctx: BuilderResetCtx = {
+    version,
+    reset: () => setVersion((v) => v + 1),
+    capturePublished: () => {
+      const root = sectionRef.current;
+      if (!root) return;
+      // Inputs nativos: o valor publicado vira o novo default, para o próximo
+      // "Descartar" voltar à última publicação (não ao estado de fábrica).
+      // Controles Radix (Select/Slider/Switch) guardam estado interno e só
+      // resetam no remount — limitação aceita do modo demo.
+      root.querySelectorAll("input").forEach((i) => {
+        if (i.type === "checkbox" || i.type === "radio") i.defaultChecked = i.checked;
+        else i.defaultValue = i.value;
+      });
+      root.querySelectorAll("textarea").forEach((t) => {
+        t.defaultValue = t.value;
+      });
+      root.querySelectorAll("select").forEach((s) => {
+        Array.from(s.options).forEach((o) => (o.defaultSelected = o.selected));
+      });
+    },
+    registerSection: (el) => {
+      sectionRef.current = el;
+    },
+  };
+
+  return (
+    <BuilderResetContext.Provider value={ctx}>
+      {children}
+    </BuilderResetContext.Provider>
+  );
+}
+
+/* Envolve a área editável: a troca de `key` remonta os filhos e devolve os
+   defaultValues renderizados pelo servidor. */
+export function BuilderFormSection({ children }: { children: React.ReactNode }) {
+  const ctx = useContext(BuilderResetContext);
+  return (
+    <div key={ctx?.version ?? 0} ref={(el) => ctx?.registerSection(el)} className="contents">
+      {children}
+    </div>
+  );
+}
 
 /* Ações do cabeçalho do builder — Descartar/Publicar (modo mock: feedback
    otimista; em modo API o dev troca por PATCH
@@ -19,6 +93,8 @@ import { playgroundThread, type ChatMessage } from "@/lib/data";
 export function BuilderActions({ agentName }: { agentName: string }) {
   const [publishing, setPublishing] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const resetCtx = useContext(BuilderResetContext);
 
   useEffect(() => {
     const onChange = (e: Event) => {
@@ -40,17 +116,22 @@ export function BuilderActions({ agentName }: { agentName: string }) {
   function publish() {
     setPublishing(true);
     setTimeout(() => {
+      // Os valores atuais viram os novos defaults: um "Descartar" futuro
+      // volta a ESTA publicação, não ao estado de fábrica.
+      resetCtx?.capturePublished();
       setPublishing(false);
       setDirty(false);
       toast.success(`${agentName} publicado.`, {
-        description: "As alterações já valem para as próximas conversas.",
+        description: "Demo: sem persistência — recarregar volta ao seed. O PATCH real está no backlog.",
       });
     }, 450);
   }
 
   function discard() {
-    // Confirmação leve para evitar perda acidental (achado usability).
-    if (!confirm("Descartar as alterações não publicadas?")) return;
+    // Remonta a seção do form: inputs não-controlados voltam aos defaults
+    // (a última publicação nesta sessão de demo).
+    resetCtx?.reset();
+    setConfirmDiscard(false);
     setDirty(false);
     toast.info("Alterações descartadas.", {
       description: "O agente voltou à última versão publicada.",
@@ -70,10 +151,37 @@ export function BuilderActions({ agentName }: { agentName: string }) {
         size="sm"
         disabled={!dirty}
         className="text-muted-foreground"
-        onClick={discard}
+        onClick={() => setConfirmDiscard(true)}
       >
         Descartar
       </Button>
+      {/* Dialog do design system no lugar do confirm() nativo (consistência
+          visual + acessível — o padrão de ação destrutiva do DESIGN-HANDOFF §4). */}
+      <Dialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Descartar alterações?</DialogTitle>
+            <DialogDescription>
+              As alterações não publicadas de {agentName} serão perdidas e o
+              formulário volta à última versão publicada.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline" size="sm">
+                Continuar editando
+              </Button>
+            </DialogClose>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={discard}
+            >
+              Descartar alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Button
         size="sm"
         disabled={publishing || !dirty}

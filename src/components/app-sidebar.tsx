@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   MessagesSquare,
@@ -36,6 +37,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -103,6 +105,7 @@ export const ROUTE_LABELS: Record<string, string> = {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <Sidebar collapsible="icon" className="border-sidebar-border">
@@ -151,13 +154,28 @@ export function AppSidebar() {
                   Workspaces
                 </DropdownMenuLabel>
                 {workspaces.map((ws) => (
-                  <DropdownMenuItem key={ws.id} className="gap-2">
+                  <DropdownMenuItem
+                    key={ws.id}
+                    className="gap-2"
+                    onClick={() =>
+                      toast.info(`Trocar para ${ws.name}`, {
+                        description: "Demo: disponível na versão integrada.",
+                      })
+                    }
+                  >
                     <FolderKanban className="size-4 text-muted-foreground" />
                     <span className="truncate">{ws.name}</span>
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-muted-foreground">
+                <DropdownMenuItem
+                  className="gap-2 text-muted-foreground"
+                  onClick={() =>
+                    toast.info("Novo workspace", {
+                      description: "Demo: disponível na versão integrada.",
+                    })
+                  }
+                >
                   <Plus className="size-4" />
                   Novo workspace
                 </DropdownMenuItem>
@@ -183,7 +201,10 @@ export function AppSidebar() {
                       isActive={active}
                       tooltip={item.title}
                     >
-                      <Link href={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpenMobile(false)}
+                      >
                         <item.icon />
                         <span>{item.title}</span>
                         {item.badge && (

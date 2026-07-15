@@ -113,7 +113,7 @@ export default function ToolsPage() {
             files.length > 1
               ? `${files.length} documentos adicionados.`
               : "Documento adicionado.",
-            { description: "Indexado e pronto para busca semântica." }
+            { description: "Demo: não persiste ao recarregar." }
           );
           // Esconde a barra logo após concluir.
           setTimeout(() => setUploadProgress(null), 400);
@@ -126,7 +126,9 @@ export default function ToolsPage() {
 
   function removeDoc(id: string, name: string) {
     setDocs((prev) => prev.filter((d) => d.id !== id));
-    toast.success("Documento removido.", { description: name });
+    toast.success("Documento removido.", {
+      description: `${name} · Demo: não persiste ao recarregar.`,
+    });
   }
 
   const totalChunks = docs.reduce((sum, d) => sum + d.chunks, 0);
@@ -149,8 +151,8 @@ export default function ToolsPage() {
 
       <Tabs defaultValue="ferramentas" className="mt-6">
         <TabsList>
-          <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
-          <TabsTrigger value="kb">Base de conhecimento</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="ferramentas">Ferramentas</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="kb">Base de conhecimento</TabsTrigger>
         </TabsList>
 
         {/* ── ABA: Ferramentas ─────────────────────────────────────── */}
@@ -201,7 +203,9 @@ export default function ToolsPage() {
                         size="sm"
                         className="text-muted-foreground"
                         onClick={() =>
-                          toast.success(`Configuração de ${t.name} salva.`)
+                          toast.success(`Configuração de ${t.name} salva.`, {
+                            description: "Demo: não persiste ao recarregar.",
+                          })
                         }
                       >
                         <Settings2 data-icon="inline-start" />

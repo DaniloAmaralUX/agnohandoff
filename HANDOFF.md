@@ -1,8 +1,8 @@
 # AgnoHub — Handoff para os devs (painel React)
 
-Este é o guia técnico do handoff. O **frontend de produção** está pronto (design system + todas as telas + o **padrão de integração com a API**, com **11 telas ligadas de verdade**: Projetos, Agentes, Workspaces, Canais + API Keys, Conversas, Playground com streaming SSE, Memória, Faturamento, Studio, Login e Onboarding/registro). Aqui está o que resta para **finalizar a integração** e o que o **backend precisa expor**.
+Este é o guia técnico do handoff de um **protótipo avançado React com integração inicial** — design system completo, todas as telas, e o padrão de integração com a API estabelecido, com parte das telas já consumindo o backend real. **O estado exato de cada tela (Ligada/Parcial/Mock) vive em [`STATUS.md`](./STATUS.md)** — este documento explica a arquitetura, o que resta para finalizar a integração e o que o backend precisa expor.
 
-- Documentação de design (viva): rota **`/design`** · Fluxos: **`/fluxos`** · Setup/scripts: **`README.md`** · Board: **`ISSUES.md`**
+- Status por tela: **`STATUS.md`** · Documentação de design (viva): rota **`/design`** · Fluxos: **`/fluxos`** · Setup/scripts: **`README.md`** · Board: **`ISSUES.md`**
 - Design source = o **código** (tokens em `src/app/globals.css`).
 
 ---
@@ -113,6 +113,20 @@ Endpoints ausentes hoje (o admin Streamlit acessa o banco direto; o React precis
 
 ---
 
+## 5.1 Decisões arquiteturais e riscos conhecidos (leia antes de estender)
+
+Decisões conscientes do protótipo que o dev deve **revisitar** antes de produção:
+
+| Decisão | Risco | Recomendação |
+|---|---|---|
+| **Sessão = X-API-Key em `localStorage`** (`src/lib/auth.ts`) — espelha o modelo do admin Streamlit | XSS pode exfiltrar a chave; chave de projeto funciona como login administrativo | Migrar para cookie httpOnly + expiração/refresh; separar papel administrativo de chave de integração |
+| **Cache TanStack global, sem isolamento por conta** (`src/lib/api/query-provider.tsx`) | Trocar de chave pode exibir dados da sessão anterior até o refetch | Limpar o cache (`queryClient.clear()`) no logout/login/registro; em produção, incluir a identidade na `queryKey` ou recriar o client por sessão |
+| **401 não encerra a sessão automaticamente** | Sessão inválida continua exibindo cache até o usuário navegar | Handler global de 401 → limpar chave + redirect `/login`; fluxo definitivo de expiração no `ISSUES.md §Auth` |
+| **Dual-mode `USE_MOCK`** (`src/lib/config.ts`) — demo sem backend é feature, não gambiarra | Tela pode "parecer" persistir; toasts explicitam "demo" | Manter até o fim da integração; specs em `docs/solutions/mock-api-dual-mode.md` |
+| **"Super Admin" sem controle de papel** (`/super-admin`, fora do AuthGuard) | Qualquer pessoa com o link vê a tela (dados mock) | Não ligar em dados reais antes de existir RBAC no backend |
+
+---
+
 ## 6. Design tokens (fonte: `src/app/globals.css`)
 | Token | Valor | Uso |
 |---|---|---|
@@ -136,3 +150,33 @@ Tema claro por padrão; `.dark` definido no mesmo arquivo (toggle no topbar).
 - **Shell:** `app-sidebar.tsx` (nav agrupada + switcher + logout), `topbar.tsx`.
 - **Primitivos:** `src/components/ui/*` (shadcn radix-nova). Cores vêm do `globals.css`.
 - **Telas:** todas as ~18 rotas existem (`src/app/(app)/*` + landing/login/handoff/fluxos/onboarding/super-admin). Catálogo vivo em **`/design`** (`/handoff` redireciona pra lá). As rotas **fora** do grupo `(app)` (landing, `/login`, `/onboarding`, `/super-admin`) **não** têm AuthGuard nem sidebar.
+
+---
+
+## 8. Fundação shadcn — o que é padrão e o que é do produto {#shadcn}
+
+Tudo em `src/components/ui/*` é **shadcn/ui, style `radix-nova`**, comparado contra o upstream oficial `shadcn-ui/ui@bc07053`. O tema (tokens OKLCH) vive em `globals.css`, **fora** dos componentes — por isso dá para atualizar primitivos sem tocar na identidade visual.
+
+**Como atualizar/adicionar componentes neste ambiente** (o registry `ui.shadcn.com` fica atrás de rede fechada — aponte a CLI para o registry oficial hospedado no GitHub):
+```bash
+export REGISTRY_URL=https://raw.githubusercontent.com/shadcn-ui/ui/bc0705384b51252af26dcc65425b216bf5eb063c/apps/v4/public/r
+pnpm dlx shadcn@latest add <componente> --diff   # prévia (smart-merge)
+pnpm dlx shadcn@latest add <componente>          # aplica
+```
+Skill oficial `shadcn` instalada em `.claude/skills/shadcn/` (regras de styling/forms/composição para o agente).
+
+**Preset do design system** (recria um app-satélite com o mesmo DS num comando): código **`b2fA`** (`style nova · baseColor neutral · lucide · geist`), gerado por `shadcn preset resolve`.
+
+**Auditoria de drift (2026-07-15) — o que é padrão vs. customizado:**
+
+| Não tocar (customização do produto — carrega tokens/motion/pt-BR) | Padrão / drift só cosmético (sincronizável sem risco) |
+|---|---|
+| `button`, `card`, `dialog`, `sheet`, `tooltip`, `slider` — sombras (`--shadow-modal/overlay`, `shadow-border`), easings próprios, hit-targets, "Fechar" | `avatar`, `input`, `label`, `table`, `textarea`, `skeleton`, `separator`, `scroll-area`, `breadcrumb`, `field`, `sonner` — idênticos ao upstream |
+| `sidebar` (`SidebarInset` como `<div>` + foco no fechar) e `progress` (`value` no Root) — correções de a11y intencionais deste projeto | `switch`, `tabs`, `badge` — upstream migrou para shorthand `data-*`/`transition-all`; funcionalmente idêntico, adiar até um bump de `radix-ui` |
+| — | `dropdown-menu`, `select` — upstream adicionou menus translúcidos (`cn-menu-*`): **mudança visual deliberada**, não adotar às cegas |
+
+> Componentes próprios (não-shadcn), com o porquê: `bits.tsx` (StatusBadge/ToneAvatar/MonoLabel — vocabulário de status do produto), `page-header.tsx` (PageShell/PageHeader — chrome de página), `form-sheet.tsx` (o padrão de ação §2), `memory-hub.tsx`, `command-menu.tsx`, `data-table/*` (portado de `satnaing/shadcn-admin`, MIT).
+
+**Registry próprio (opção futura da empresa):** publicar o design system como registry consumível por `shadcn add` = adicionar um `registry.json` na raiz (`registry:base`) — repo GitHub público serve direto (`owner/repo/item`), sem servidor. Ver `docs/solutions/` se for adiante.
+
+**Migração Radix → Base UI:** o upstream tornou Base UI o default (jul/2026), mas Radix **não** está deprecado ("you do not need to migrate") — decisão futura do dev, com skill oficial de migração disponível.

@@ -284,7 +284,9 @@ export default function BillingPage() {
   function handlePlanCta(plan: PlanCard) {
     if (plan.current) return;
     if (plan.contact) {
-      toast.success("Pedido enviado — nosso time comercial vai te chamar.");
+      toast.success("Pedido enviado — nosso time comercial vai te chamar.", {
+        description: "Demo: disponível na versão integrada.",
+      });
       return;
     }
     if (USE_MOCK) {
@@ -298,7 +300,7 @@ export default function BillingPage() {
 
   function handleExport() {
     toast.success("Exportação iniciada.", {
-      description: "Você receberá o arquivo por e-mail em instantes.",
+      description: "Demo: disponível na versão integrada.",
     });
   }
 
@@ -339,7 +341,7 @@ export default function BillingPage() {
               <span className="text-foreground">{String(usedPct).replace(".", ",")}%</span>
             </span>
           </div>
-          <Progress value={usedPct} className="mt-2.5 h-2" />
+          <Progress value={usedPct} aria-label="Uso de tokens do período" className="mt-2.5 h-2" />
           <p className="mt-2 font-mono text-[11px] text-muted-foreground">
             Renova em {renewsIn} · restam {fmt(available)} tokens
           </p>
@@ -349,9 +351,9 @@ export default function BillingPage() {
       {/* ── Abas ─────────────────────────────────────────────────── */}
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <TabsList>
-          <TabsTrigger value="planos">Planos</TabsTrigger>
-          <TabsTrigger value="comprar">Comprar créditos</TabsTrigger>
-          <TabsTrigger value="historico">Histórico</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="planos">Planos</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="comprar">Comprar créditos</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="historico">Histórico</TabsTrigger>
         </TabsList>
 
         {/* ── Planos ─────────────────────────────────────────────── */}

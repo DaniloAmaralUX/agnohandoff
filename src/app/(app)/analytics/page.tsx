@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
       >
         {/* Badge Pro removido — o usuário demo já é Pro (sidebar diz 'Plano Pro'); competia com o único controle funcional (achado) */}
         <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-          <SelectTrigger size="sm" className="w-[140px]">
+          <SelectTrigger size="sm" className="w-[140px]" aria-label="Período do relatório">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">

@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/bits";
-import { initials } from "@/lib/utils";
+import { EmptyState, TONE_TEXT_AA } from "@/components/bits";
+import { cn, initials } from "@/lib/utils";
 import { statusDot, TONE as toneMap } from "@/lib/constants";
 import { useAgents } from "@/lib/api/agents";
 
@@ -116,9 +116,11 @@ export default function AgentsPage() {
             <Card key={a.id} className="gap-0 py-0">
               <CardHeader className="flex-row items-start gap-3 px-4 pt-4">
                 <div
-                  className={`flex size-11 shrink-0 items-center justify-center rounded-md text-sm font-semibold ${
-                    toneMap[a.tone] ?? "bg-secondary text-foreground"
-                  }`}
+                  className={cn(
+                    "flex size-11 shrink-0 items-center justify-center rounded-md text-sm font-semibold",
+                    toneMap[a.tone] ?? "bg-secondary text-foreground",
+                    TONE_TEXT_AA[a.tone],
+                  )}
                 >
                   {initials(a.name)}
                 </div>

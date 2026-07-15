@@ -42,8 +42,10 @@ describe("mapApiKey", () => {
       name: "Painel",
       preview: "proj_ab···cd",
       active: true,
+      projectId: null,
     });
     expect(mapApiKey({ id: 2, is_active: false }).active).toBe(false);
+    expect(mapApiKey({ id: 3, project_id: 7 }).projectId).toBe("7");
   });
 });
 
@@ -70,7 +72,7 @@ describe("useApiKeys", () => {
     const { result } = renderHook(() => useApiKeys(), { wrapper: wrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual([
-      { id: "k1", name: "Painel", preview: "proj_12···89", active: true },
+      { id: "k1", name: "Painel", preview: "proj_12···89", active: true, projectId: null },
     ]);
   });
 

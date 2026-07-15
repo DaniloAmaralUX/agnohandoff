@@ -97,7 +97,12 @@ export function useChatSession() {
   const [isStreaming, setIsStreaming] = React.useState(false);
   const [debug, setDebug] = React.useState<ChatDebug | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [sessionId, setSessionId] = React.useState<string>(() => newSessionId());
+  // Gerado pós-mount: Math.random() no inicializador rodaria também no SSR e
+  // divergiria do cliente (hydration mismatch).
+  const [sessionId, setSessionId] = React.useState<string>("");
+  React.useEffect(() => {
+    setSessionId((prev) => prev || newSessionId());
+  }, []);
   const abortRef = React.useRef<AbortController | null>(null);
   const mockTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 

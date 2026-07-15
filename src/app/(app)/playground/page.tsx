@@ -109,9 +109,9 @@ export default function PlaygroundPage() {
 
       <Tabs defaultValue="chat" className="mt-6">
         <TabsList>
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="imagem">Imagem</TabsTrigger>
-          <TabsTrigger value="voz">Voz</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="chat">Chat</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="imagem">Imagem</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="voz">Voz</TabsTrigger>
         </TabsList>
 
         {/* ── Aba Chat ──────────────────────────────────────────────── */}
@@ -285,7 +285,7 @@ export default function PlaygroundPage() {
                       Modelo
                     </Label>
                     <Select value={model} onValueChange={setModel}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full" aria-label="Modelo do agente">
                         <SelectValue placeholder="Selecione o modelo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -314,6 +314,7 @@ export default function PlaygroundPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Temperatura"
                       min={0}
                       max={1}
                       step={0.1}
@@ -336,7 +337,7 @@ export default function PlaygroundPage() {
                     </Label>
                     <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-2.5 py-1.5">
                       <span className="truncate font-mono text-[12px] text-foreground">
-                        {chat.sessionId}
+                        {chat.sessionId || "—"}
                       </span>
                       <Circle className="size-2 shrink-0 fill-current text-forest-text" />
                     </div>
@@ -351,7 +352,7 @@ export default function PlaygroundPage() {
                           Lembra do histórico do contato
                         </p>
                       </div>
-                      <Switch checked={memory} onCheckedChange={setMemory} />
+                      <Switch checked={memory} onCheckedChange={setMemory} aria-label="Memória" />
                     </div>
                     <div className="flex items-center justify-between gap-3">
                       <div className="space-y-0.5">
@@ -360,7 +361,7 @@ export default function PlaygroundPage() {
                           Permite chamar CRM e Agenda
                         </p>
                       </div>
-                      <Switch checked={tools} onCheckedChange={setTools} />
+                      <Switch checked={tools} onCheckedChange={setTools} aria-label="Ferramentas" />
                     </div>
                   </div>
                 </CardContent>

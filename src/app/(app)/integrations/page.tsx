@@ -121,7 +121,7 @@ export default function IntegrationsPage() {
   const connect = (name: string) => {
     setConnecting((prev) => ({ ...prev, [name]: true }));
     toast.success("Conexão iniciada (demo).", {
-      description: `Autorize a ${name} para concluir a configuração.`,
+      description: "Demo: não persiste ao recarregar.",
     });
   };
 
@@ -160,7 +160,15 @@ export default function IntegrationsPage() {
           </div>
           {/* CardAction devolve o botão ao topo direito no tamanho sm. */}
           <CardAction>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                toast.info("Reconfigurar GitHub", {
+                  description: "Demo: disponível na versão integrada.",
+                })
+              }
+            >
               <RefreshCw data-icon="inline-start" />
               Reconfigurar
             </Button>

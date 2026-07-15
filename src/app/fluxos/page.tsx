@@ -21,9 +21,9 @@ const personaLabel: Record<Persona, string> = {
 const personaClass: Record<Persona, string> = {
   // 'text-heat' em 10px reprova AA no light — trocado por 'text-heat-text' (achado: <14px vivo)
   cliente: "bg-heat/12 text-heat-text",
-  builder: "bg-bluetron/12 text-bluetron-text",
-  operador: "bg-forest/15 text-forest-text",
-  admin: "bg-amethyst/14 text-amethyst-text",
+  builder: "bg-bluetron/12 text-bluetron-700 dark:text-bluetron-text",
+  operador: "bg-forest/15 text-forest-700 dark:text-forest-text",
+  admin: "bg-amethyst/14 text-amethyst-700 dark:text-amethyst-text",
   plataforma: "bg-secondary text-foreground",
 };
 

@@ -73,6 +73,11 @@ describe("useChatSession — modo demo", () => {
     expect(result.current.debug?.ok).toBe(true);
   });
 
+  it("sessionId nasce vazio no render e é gerado após o mount (anti-hydration)", async () => {
+    const { result } = renderHook(() => useChatSession());
+    await waitFor(() => expect(result.current.sessionId).toMatch(/^sess_/));
+  });
+
   it("reset limpa mensagens e troca o session id", async () => {
     const { result } = renderHook(() => useChatSession());
     const firstSession = result.current.sessionId;

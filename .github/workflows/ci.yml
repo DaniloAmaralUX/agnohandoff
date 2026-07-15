@@ -28,6 +28,13 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Sinal de drift do design system — falha se o snapshot commitado
+      # divergir do medido (audit rodado sem commitar o resultado).
+      - name: Design audit
+        run: |
+          pnpm design:audit
+          git diff -I '"generatedAt"' --exit-code src/app/design/audit.json
+
       # Sem .env.local no CI => build em modo demo (mock), sem backend.
       - name: Build
         run: pnpm build

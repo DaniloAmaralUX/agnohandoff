@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/field";
 import { setApiKey, validateApiKey } from "@/lib/auth";
 import { USE_MOCK } from "@/lib/config";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function LoginPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [key, setKey] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -35,6 +37,8 @@ export default function LoginPage() {
     setLoading(false);
     if (ok) {
       setApiKey(trimmed);
+      // Isola a sessão nova de qualquer cache da conta anterior.
+      queryClient.clear();
       router.replace("/dashboard");
     } else {
       setError("Chave inválida ou API indisponível. Confira e tente de novo.");

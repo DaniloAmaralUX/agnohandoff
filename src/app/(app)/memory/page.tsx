@@ -110,7 +110,9 @@ export default function MemoryPage() {
 
   const saveContext = () => {
     if (USE_MOCK) {
-      toast.success("Configurações de memória salvas.");
+      toast.success("Configurações de memória salvas.", {
+        description: "Demo: não persiste ao recarregar.",
+      });
       return;
     }
     updateMemory.mutate({

@@ -1,6 +1,6 @@
 # Board — AgnoHub painel React
 
-Tarefas para virar issues no GitHub Project. Cada item é acionável. Contexto/padrões em [`HANDOFF.md`](./HANDOFF.md).
+Tarefas para virar issues no GitHub Project. Cada item é acionável. Contexto/padrões em [`HANDOFF.md`](./HANDOFF.md). **Estado real de cada tela: [`STATUS.md`](./STATUS.md)** (fonte única de status de integração).
 
 ## 🔌 Frontend — ligar telas na API (replicar o padrão)
 Padrão e exemplos em HANDOFF §2. Cada uma: hook em `src/lib/api/*` + `page.tsx` client + estados loading/erro/vazio + `pnpm verify`.

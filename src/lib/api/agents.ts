@@ -116,7 +116,9 @@ export function useToggleAgent() {
       toast.error("Não foi possível atualizar o agente. Alteração revertida.");
     },
     onSuccess: (publish) => {
-      toast.success(publish ? "Agente publicado." : "Agente movido para rascunho.");
+      toast.success(publish ? "Agente publicado." : "Agente movido para rascunho.", {
+        description: USE_MOCK ? "Demo: não persiste ao recarregar." : undefined,
+      });
     },
     onSettled: () => {
       if (!USE_MOCK) qc.invalidateQueries({ queryKey: queryKeys.agents.all() });

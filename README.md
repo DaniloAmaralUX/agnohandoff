@@ -4,11 +4,13 @@ Painel React para construir, publicar e operar agentes de IA conversacionais com
 memória persistente — omnichannel (WhatsApp, Web Widget, Telegram, Instagram),
 MCP, ferramentas e analytics.
 
-Este repositório é o **handoff de design→dev**: o produto completo com
-**todos os fluxos funcionando em dados mock** (read-only) e a camada de dados
-pronta para ligar na API real. O design system, os padrões e os contratos estão
-documentados — o trabalho do dev é trocar o mock pelos endpoints (ver
-[`HANDOFF.md`](./HANDOFF.md)).
+Este repositório é o **handoff de design→dev** de um **protótipo avançado React
+com integração inicial ao backend** — não é um frontend de produção. Toda tela
+funciona em modo demo (dados mock, sem persistência) e parte delas consome a
+API real; o estado exato de cada uma vive em **[`STATUS.md`](./STATUS.md)**, a
+fonte única de verdade de integração. O design system, os padrões e os
+contratos estão documentados — o trabalho do dev é continuar de onde o
+[`HANDOFF.md`](./HANDOFF.md) aponta.
 
 ## Rodando
 

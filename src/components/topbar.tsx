@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROUTE_LABELS } from "@/components/app-sidebar";
+import { useQueryClient } from "@tanstack/react-query";
 import { clearApiKey } from "@/lib/auth";
 import { useActiveProject } from "@/lib/project-context";
 
@@ -50,6 +51,7 @@ function humanize(seg: string) {
 export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const parts = pathname.split("/").filter(Boolean);
   const seg = parts[0] ?? "dashboard";
   const label = ROUTE_LABELS[seg] ?? humanize(seg);
@@ -71,19 +73,24 @@ export function Topbar() {
       <SidebarTrigger className="text-muted-foreground" />
       <Separator orientation="vertical" className="mr-1 h-5" />
 
-      <nav className="flex items-center gap-1.5 text-sm">
-        <span className="flex size-4 items-center justify-center rounded bg-heat text-[10px] font-bold leading-none text-heat-foreground">A</span>
-        <span className="text-muted-foreground">AgnoHub</span>
-        <span className="text-border">/</span>
-        <ProjectCrumb />
+      {/* min-w-0 + truncate: em 390px o breadcrumb encolhe em vez de empurrar
+          as ações para fora da tela (overflow horizontal pego pelo e2e mobile).
+          No celular só o nó atual aparece; o caminho completo volta no sm:. */}
+      <nav className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
+        <span className="hidden items-center gap-1.5 sm:flex">
+          <span className="flex size-4 items-center justify-center rounded bg-heat text-[10px] font-bold leading-none text-heat-foreground">A</span>
+          <span className="text-muted-foreground">AgnoHub</span>
+          <span className="text-border">/</span>
+          <ProjectCrumb />
+        </span>
         {detail ? (
           <>
-            <span className="text-muted-foreground">{label}</span>
-            <span className="text-border">/</span>
-            <span className="font-medium text-foreground">{detail}</span>
+            <span className="hidden text-muted-foreground sm:inline">{label}</span>
+            <span className="hidden text-border sm:inline">/</span>
+            <span className="min-w-0 truncate font-medium text-foreground">{detail}</span>
           </>
         ) : (
-          <span className="font-medium text-foreground">{label}</span>
+          <span className="min-w-0 truncate font-medium text-foreground">{label}</span>
         )}
       </nav>
 
@@ -125,7 +132,14 @@ export function Topbar() {
 
         {/* Conta do usuário — canto superior direito (padrão Vercel/Linear).
             A organização permanece na sidebar (contexto de navegação). */}
-        <AccountMenu onSignOut={() => { clearApiKey(); router.push("/login"); }} />
+        <AccountMenu
+          onSignOut={() => {
+            clearApiKey();
+            // Sem isso, a próxima sessão (outra chave) veria o cache anterior.
+            queryClient.clear();
+            router.push("/login");
+          }}
+        />
       </div>
     </header>
   );

@@ -35,11 +35,11 @@ import { initials } from "@/lib/utils";
 
 /* ── Ícone + tint por alvo de publicação ────────────────────────── */
 const targetMeta: Record<string, { icon: typeof Server; tint: string }> = {
-  vm: { icon: Server, tint: "bg-bluetron/12 text-bluetron-text" },
+  vm: { icon: Server, tint: "bg-bluetron/12 text-bluetron-700 dark:text-bluetron-text" },
   // Heat é reservado para ação/CTA — usar aqui num de três alvos equivalentes
   // criava ênfase falsa. Amethyst mantém identidade e fica neutro semanticamente.
-  cloud: { icon: Cloud, tint: "bg-amethyst/12 text-amethyst-text" },
-  export: { icon: Download, tint: "bg-forest/12 text-forest-text" },
+  cloud: { icon: Cloud, tint: "bg-amethyst/12 text-amethyst-700 dark:text-amethyst-text" },
+  export: { icon: Download, tint: "bg-forest/12 text-forest-700 dark:text-forest-text" },
 };
 
 /* Tom do avatar por agente (reaproveita o seed dos agentes). */

@@ -102,23 +102,23 @@ export default function SettingsPage() {
 
       <Tabs defaultValue="plano" className="mt-6">
         <TabsList>
-          <TabsTrigger value="plano">
+          <TabsTrigger className="text-foreground/70" value="plano">
             <CreditCard data-icon="inline-start" />
             Plano
           </TabsTrigger>
-          <TabsTrigger value="byok">
+          <TabsTrigger className="text-foreground/70" value="byok">
             <KeyRound data-icon="inline-start" />
             BYOK
           </TabsTrigger>
-          <TabsTrigger value="langfuse">
+          <TabsTrigger className="text-foreground/70" value="langfuse">
             <Activity data-icon="inline-start" />
             Langfuse
           </TabsTrigger>
-          <TabsTrigger value="org">
+          <TabsTrigger className="text-foreground/70" value="org">
             <Building2 data-icon="inline-start" />
             Organização
           </TabsTrigger>
-          <TabsTrigger value="perf">
+          <TabsTrigger className="text-foreground/70" value="perf">
             <Gauge data-icon="inline-start" />
             Performance
           </TabsTrigger>
@@ -227,7 +227,7 @@ export default function SettingsPage() {
                     >
                       {f.label}
                       {!f.included && (
-                        <span className="ml-1.5 text-muted-foreground/70">
+                        <span className="ml-1.5 text-foreground/70">
                           — disponível no Scale
                         </span>
                       )}
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                 className="bg-heat text-heat-foreground hover:bg-heat-hover"
                 onClick={() =>
                   toast.success("Chave salva.", {
-                    description: "Criptografada em repouso e aplicada aos agentes.",
+                    description: "Demo: não persiste ao recarregar.",
                   })
                 }
               >
@@ -378,7 +378,7 @@ export default function SettingsPage() {
                 className="bg-heat text-heat-foreground hover:bg-heat-hover"
                 onClick={() =>
                   toast.success("Conexão salva.", {
-                    description: "Credenciais Langfuse criptografadas na organização.",
+                    description: "Demo: não persiste ao recarregar.",
                   })
                 }
               >
@@ -439,7 +439,7 @@ export default function SettingsPage() {
                 className="bg-heat text-heat-foreground hover:bg-heat-hover"
                 onClick={() =>
                   toast.success("Configurações salvas.", {
-                    description: "Dados da organização atualizados.",
+                    description: "Demo: não persiste ao recarregar.",
                   })
                 }
               >
@@ -523,7 +523,7 @@ export default function SettingsPage() {
                 className="bg-heat text-heat-foreground hover:bg-heat-hover"
                 onClick={() =>
                   toast.success("Configurações salvas.", {
-                    description: `workers=${perf.workers} · timeout=${perf.timeout}s · reiniciando em ~10s.`,
+                    description: "Demo: não persiste ao recarregar.",
                   })
                 }
               >

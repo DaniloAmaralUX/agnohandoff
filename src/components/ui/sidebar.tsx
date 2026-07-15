@@ -186,6 +186,17 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
+          // O sheet é controlado (o gatilho não é SheetTrigger), então o Radix
+          // não sabe para onde devolver o foco — devolvemos ao SidebarTrigger.
+          onCloseAutoFocus={(event) => {
+            const trigger = document.querySelector<HTMLElement>(
+              '[data-slot="sidebar-trigger"]'
+            )
+            if (trigger) {
+              event.preventDefault()
+              trigger.focus()
+            }
+          }}
           className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
@@ -301,9 +312,11 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   )
 }
 
-function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+function SidebarInset({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <main
+    // <div>, não <main>: o landmark <main id="main-content"> vive no layout
+    // do grupo (app) — dois <main> aninhados violam a semântica de landmarks.
+    <div
       data-slot="sidebar-inset"
       className={cn(
         "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
