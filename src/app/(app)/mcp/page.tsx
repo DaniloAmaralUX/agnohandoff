@@ -74,7 +74,7 @@ export default function McpRegistryPage() {
       ...prev,
     ]);
     toast.success("Servidor registrado.", {
-      description: "As ferramentas ficarão disponíveis para os agentes vinculados.",
+      description: "Demo: não persiste ao recarregar.",
     });
     form.reset();
     setOpen(false);

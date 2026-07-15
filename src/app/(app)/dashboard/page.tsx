@@ -50,7 +50,14 @@ export default function DashboardPage() {
           Relatório
         </Button>
         {/* CTA usa --primary p/ AA (achado: fill heat vivo reprova AA) */}
-        <Button size="sm">
+        <Button
+          size="sm"
+          onClick={() =>
+            toast.info("Novo agente", {
+              description: "Demo: disponível na versão integrada.",
+            })
+          }
+        >
           <Plus data-icon="inline-start" />
           Novo agente
         </Button>

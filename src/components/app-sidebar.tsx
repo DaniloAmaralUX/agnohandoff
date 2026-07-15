@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   MessagesSquare,
@@ -153,13 +154,28 @@ export function AppSidebar() {
                   Workspaces
                 </DropdownMenuLabel>
                 {workspaces.map((ws) => (
-                  <DropdownMenuItem key={ws.id} className="gap-2">
+                  <DropdownMenuItem
+                    key={ws.id}
+                    className="gap-2"
+                    onClick={() =>
+                      toast.info(`Trocar para ${ws.name}`, {
+                        description: "Demo: disponível na versão integrada.",
+                      })
+                    }
+                  >
                     <FolderKanban className="size-4 text-muted-foreground" />
                     <span className="truncate">{ws.name}</span>
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-muted-foreground">
+                <DropdownMenuItem
+                  className="gap-2 text-muted-foreground"
+                  onClick={() =>
+                    toast.info("Novo workspace", {
+                      description: "Demo: disponível na versão integrada.",
+                    })
+                  }
+                >
                   <Plus className="size-4" />
                   Novo workspace
                 </DropdownMenuItem>

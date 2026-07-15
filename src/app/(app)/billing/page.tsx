@@ -284,7 +284,9 @@ export default function BillingPage() {
   function handlePlanCta(plan: PlanCard) {
     if (plan.current) return;
     if (plan.contact) {
-      toast.success("Pedido enviado — nosso time comercial vai te chamar.");
+      toast.success("Pedido enviado — nosso time comercial vai te chamar.", {
+        description: "Demo: disponível na versão integrada.",
+      });
       return;
     }
     if (USE_MOCK) {
@@ -298,7 +300,7 @@ export default function BillingPage() {
 
   function handleExport() {
     toast.success("Exportação iniciada.", {
-      description: "Você receberá o arquivo por e-mail em instantes.",
+      description: "Demo: disponível na versão integrada.",
     });
   }
 

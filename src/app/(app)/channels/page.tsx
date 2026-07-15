@@ -358,7 +358,7 @@ export default function ChannelsPage() {
                       className="h-8"
                       onClick={() =>
                         toast.success(`Reconectando ${c.label}…`, {
-                          description: "Você será redirecionado para autorizar novamente.",
+                          description: "Demo: disponível na versão integrada.",
                         })
                       }
                     >
@@ -373,7 +373,7 @@ export default function ChannelsPage() {
                       className="h-8"
                       onClick={() =>
                         toast.info(`Concluindo configuração de ${c.label}…`, {
-                          description: "Finalize as credenciais para conectar.",
+                          description: "Demo: disponível na versão integrada.",
                         })
                       }
                     >
@@ -387,7 +387,7 @@ export default function ChannelsPage() {
                     className="h-8 text-muted-foreground"
                     onClick={() =>
                       toast.info(`Abrindo configuração de ${c.label}…`, {
-                        description: "Ajuste credenciais, gatilhos e roteamento.",
+                        description: "Demo: disponível na versão integrada.",
                       })
                     }
                   >
@@ -401,7 +401,7 @@ export default function ChannelsPage() {
                       className="h-8 text-muted-foreground"
                       onClick={() =>
                         toast.success("Teste enviado ao canal.", {
-                          description: `Mensagem de verificação disparada para ${c.label}.`,
+                          description: "Demo: nenhuma mensagem real é disparada.",
                         })
                       }
                     >

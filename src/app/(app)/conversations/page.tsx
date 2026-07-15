@@ -114,13 +114,15 @@ export default function ConversationsPage() {
     setStatus("Ativo");
     if (selected) setAssumidas((prev) => new Set(prev).add(selected.id));
     toast.success("Você assumiu a conversa.", {
-      description: "O agente foi pausado — agora você responde.",
+      description: "Demo: não persiste ao recarregar.",
     });
   };
 
   const resolver = () => {
     setStatus("Resolvido");
-    toast.success("Conversa marcada como resolvida.");
+    toast.success("Conversa marcada como resolvida.", {
+      description: "Demo: não persiste ao recarregar.",
+    });
   };
 
   const enviar = () => {
@@ -385,7 +387,7 @@ export default function ConversationsPage() {
                 size="sm"
                 onClick={() =>
                   toast.success("Conversa atribuída a você.", {
-                    description: `${selected.contact} agora aparece na sua fila.`,
+                    description: "Demo: não persiste ao recarregar.",
                   })
                 }
                 className="hidden sm:inline-flex"

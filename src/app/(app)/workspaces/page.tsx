@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -347,11 +348,29 @@ export default function WorkspacesPage() {
                   {/* "Abrir" rebaixado a outline: fill Heat fica reservado ao
                       único CTA de página (achado hierarchy). */}
                   <div className="mt-4 flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() =>
+                        toast.info(`Abrir ${ws.name}`, {
+                          description: "Demo: disponível na versão integrada.",
+                        })
+                      }
+                    >
                       Abrir
                       <ArrowUpRight data-icon="inline-end" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 text-muted-foreground"
+                      onClick={() =>
+                        toast.info(`Configurar ${ws.name}`, {
+                          description: "Demo: disponível na versão integrada.",
+                        })
+                      }
+                    >
                       Configurar
                     </Button>
                   </div>
