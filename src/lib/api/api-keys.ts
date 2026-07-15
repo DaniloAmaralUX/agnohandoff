@@ -14,6 +14,8 @@ export type ApiKeyView = {
   name: string;
   preview: string;
   active: boolean;
+  /** Projeto dono da chave — a listagem pode omitir (response não tipada no OpenAPI). */
+  projectId: string | null;
 };
 
 /** Resultado do create — a chave crua (`raw`) aparece UMA única vez. */
@@ -25,6 +27,7 @@ export function mapApiKey(k: ApiKeyItem): ApiKeyView {
     name: k.name ?? "",
     preview: k.key_preview ?? "",
     active: k.is_active !== false,
+    projectId: k.project_id != null ? String(k.project_id) : null,
   };
 }
 
@@ -36,6 +39,7 @@ function fromMock(): ApiKeyView[] {
       name: "Painel",
       preview: "pk_demo_DEMO···0000",
       active: true,
+      projectId: null,
     },
   ];
 }

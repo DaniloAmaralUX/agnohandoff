@@ -45,6 +45,7 @@ import { USE_MOCK } from "@/lib/config";
 import { useChannels, useCreateChannel } from "@/lib/api/channels";
 import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "@/lib/api/api-keys";
 import { useProjects } from "@/lib/api/projects";
+import { useActiveProject } from "@/lib/project-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { statusDot } from "@/lib/constants";
 import { FormSheet } from "@/components/form-sheet";
@@ -111,7 +112,14 @@ export default function ChannelsPage() {
 
   const items = data ?? [];
   const projectOptions = projData ?? [];
-  const currentKey = (keys ?? []).find((k) => k.active) ?? (keys ?? [])[0];
+  const { projectId: activeProjectId } = useActiveProject();
+  // Só chaves do projeto ativo: sem esse filtro, "regenerar" podia exibir —
+  // e revogar — a chave de OUTRO projeto. Chaves sem project_id na resposta
+  // (campo não garantido pelo OpenAPI) permanecem visíveis por segurança.
+  const projectKeys = (keys ?? []).filter(
+    (k) => k.projectId == null || activeProjectId == null || k.projectId === activeProjectId,
+  );
+  const currentKey = projectKeys.find((k) => k.active) ?? projectKeys[0];
 
   // "fullKey" = a chave real (retornada UMA vez pela API); depois só o
   // preview mascarado permanece — a íntegra é irrecuperável, como um bom
