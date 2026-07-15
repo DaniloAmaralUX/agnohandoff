@@ -50,6 +50,25 @@ O repositório deixou de se descrever como "frontend de produção" e passou a s
 4. **Aprovar a troca de licença** MIT → proprietária (texto pronto no GOVERNANCE.md).
 5. **Revisar a pasta `palace/`** do zip original (dados possivelmente sensíveis).
 
+## Como publicar esta entrega
+
+O ambiente onde ela foi produzida tinha credencial Git **somente-leitura** (push negado) e sem chave de assinatura — por isso a branch chega até você como um **bundle** (`agnohandoff-handoff.bundle`). No seu clone local do repositório:
+
+```bash
+git fetch ./agnohandoff-handoff.bundle claude/determined-gauss-sgvjcs
+git push origin FETCH_HEAD:refs/heads/claude/determined-gauss-sgvjcs
+```
+
+Opcional — para os commits aparecerem como **Verified** no GitHub, reassine com a sua chave antes do push:
+
+```bash
+git checkout -B claude/determined-gauss-sgvjcs FETCH_HEAD
+git rebase --exec "git commit --amend --no-edit -S" origin/main
+git push -f origin claude/determined-gauss-sgvjcs
+```
+
+Depois, abra o PR de `claude/determined-gauss-sgvjcs` para `main` e revise pelo próprio `docs/ENTREGA.md` + `STATUS.md`.
+
 ## Como continuar
 
 `CONTRIBUTING.md` diz como rodar e o gate (`pnpm verify`); `STATUS.md` diz o estado real de cada tela; `docs/BACKLOG.md` traz o próximo trabalho priorizado com critérios de aceite. O dev sênior consegue continuar sem depender de você.
