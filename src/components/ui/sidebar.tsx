@@ -186,6 +186,17 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
+          // O sheet é controlado (o gatilho não é SheetTrigger), então o Radix
+          // não sabe para onde devolver o foco — devolvemos ao SidebarTrigger.
+          onCloseAutoFocus={(event) => {
+            const trigger = document.querySelector<HTMLElement>(
+              '[data-slot="sidebar-trigger"]'
+            )
+            if (trigger) {
+              event.preventDefault()
+              trigger.focus()
+            }
+          }}
           className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
