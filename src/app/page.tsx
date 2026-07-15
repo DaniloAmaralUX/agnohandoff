@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -9,6 +10,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MemoryHub } from "@/components/memory-hub";
+import { Reveal } from "@/components/reveal";
+
+/* Entrada do hero: cada bloco entra com animate-enter (fade+rise 12px+blur,
+   280ms var(--ease-enter); < 300ms — Emil) em stagger de 60ms. compound-design-ui §5. */
+const rise = (i: number) => ({ "--stagger": i }) as CSSProperties;
 
 const features = [
   {
@@ -90,24 +96,24 @@ export default function Landing() {
       <section className="relative overflow-hidden border-b border-border">
         <div className="grid-bg absolute inset-0 [mask-image:radial-gradient(ellipse_at_50%_0%,black,transparent_75%)]" />
         <div className="relative mx-auto max-w-[1180px] px-5 pb-16 pt-20 text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+          <div className="animate-enter mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-[11px] uppercase tracking-wide text-muted-foreground" style={rise(0)}>
             <span className="size-1.5 rounded-full bg-heat" />
             Plataforma de agentes de IA
           </div>
           {/* Piso do clamp reduzido p/ mobile aproximar mockup da 1ª dobra (achado: 1ª dobra 100% texto no mobile) */}
-          <h1 className="mx-auto mt-6 max-w-3xl text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+          <h1 className="animate-enter mx-auto mt-6 max-w-3xl text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-0.03em]" style={rise(1)}>
             Agentes de IA que{" "}
             <span className="text-heat-text">lembram</span>, atendem e{" "}
             <span className="text-heat-text">resolvem</span>.
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
+          <p className="animate-enter mx-auto mt-5 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]" style={rise(2)}>
             Construa, publique e opere agentes conversacionais com memória
             persistente. Omnichannel, com suas ferramentas, prontos para produção.
           </p>
           {/* CTAs w-full no mobile p/ alinhar larguras (achado: larguras desiguais empilhado);
               secundário aponta p/ #features p/ os destinos serem distintos (achado: par com mesmo destino);
               primário usa --primary (AA). */}
-          <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+          <div className="animate-enter mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center" style={rise(3)}>
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/dashboard">
                 Ver demo ao vivo
@@ -118,7 +124,7 @@ export default function Landing() {
               <Link href="#features">Explorar o produto</Link>
             </Button>
           </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
+          <div className="animate-enter mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground" style={rise(4)}>
             {["Memória persistente", "Omnichannel", "Sem lock-in"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <Check className="size-3.5 text-forest-text" />
@@ -127,9 +133,10 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* Preview ao vivo do produto (iframe do dashboard) */}
-          <div className="relative mx-auto mt-14 max-w-[1000px]">
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_24px_80px_-24px_rgba(0,0,0,0.25)]">
+          {/* Preview ao vivo do produto (iframe do dashboard).
+              img-outline: anel 1px preto/branco PURO 10% p/ profundidade (compound-design-ui §8). */}
+          <div className="animate-enter relative mx-auto mt-14 max-w-[1000px]" style={rise(5)}>
+            <div className="img-outline overflow-hidden rounded-xl border border-border bg-card shadow-[0_24px_80px_-24px_rgba(0,0,0,0.25)]">
               <div className="flex items-center gap-1.5 border-b border-border bg-muted/60 px-3.5 py-2.5">
                 <span className="size-2.5 rounded-full bg-crimson/70" />
                 <span className="size-2.5 rounded-full bg-honey/80" />
@@ -163,19 +170,22 @@ export default function Landing() {
 
       {/* ── Features ────────────────────────────────────────────── */}
       <section id="features" className="mx-auto max-w-[1180px] px-5 py-20 scroll-mt-16">
-        <div className="max-w-2xl">
+        <Reveal className="max-w-2xl">
           <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
             Por que AgnoHub
           </span>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight">
             Tudo que um agente precisa para ir a produção.
           </h2>
-        </div>
+        </Reveal>
+        {/* Cards: hover:shadow-border-hover = profundidade em camadas em vez de só
+            borda (compound-design-ui §3); reveal em stagger ao entrar na viewport (§5). */}
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => (
-            <div
+          {features.map((f, i) => (
+            <Reveal
               key={f.title}
-              className="surface p-5 transition-colors hover:border-heat/40"
+              stagger={i}
+              className="surface p-5 transition-[color,border-color,box-shadow] duration-150 ease-out-strong hover:border-heat/40 hover:shadow-border-hover"
             >
               <div className="flex size-10 items-center justify-center rounded-md heat-tint">
                 <f.icon className="size-5" />
@@ -184,7 +194,7 @@ export default function Landing() {
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
                 {f.desc}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -192,7 +202,7 @@ export default function Landing() {
       {/* ── Como funciona ───────────────────────────────────────── */}
       <section className="border-y border-border bg-card">
         <div className="mx-auto max-w-[1180px] px-5 py-20">
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+          <Reveal className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
             <div>
               <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
                 Como funciona
@@ -221,13 +231,13 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ── Assinatura: o hub que lembra ────────────────────────── */}
       <section className="mx-auto max-w-[1180px] px-5 py-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.2fr]">
+        <Reveal className="grid items-center gap-12 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-wide text-heat-text">
               Memória persistente
@@ -254,7 +264,7 @@ export default function Landing() {
             </ul>
           </div>
           <MemoryHub />
-        </div>
+        </Reveal>
       </section>
 
       {/* ── CTA final ───────────────────────────────────────────── */}
@@ -262,7 +272,7 @@ export default function Landing() {
       <section className="mx-auto max-w-[1180px] px-5 py-24">
         {/* #4: no dark, bg-graphite ficava tonalmente igual ao --background. Elevamos 2 steps (--sidebar/accent)
              e reforçamos a borda p/ recuperar o pico de contraste do painel. */}
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center shadow-[0_24px_80px_-24px_rgba(0,0,0,0.35)] dark:border-white/15 dark:bg-[oklch(0.34_0.008_55)] dark:shadow-[0_24px_80px_-24px_rgba(0,0,0,0.7)]">
+        <Reveal className="relative overflow-hidden rounded-2xl border border-border bg-graphite px-8 py-16 text-center shadow-[0_24px_80px_-24px_rgba(0,0,0,0.35)] dark:border-white/15 dark:bg-[oklch(0.34_0.008_55)] dark:shadow-[0_24px_80px_-24px_rgba(0,0,0,0.7)]">
           <div className="grid-bg absolute inset-0 opacity-[0.15]" />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-[clamp(1.75rem,4vw,2.75rem)] font-semibold leading-tight tracking-tight text-white">
@@ -281,7 +291,7 @@ export default function Landing() {
               </Button>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── Footer ──────────────────────────────────────────────── */}
