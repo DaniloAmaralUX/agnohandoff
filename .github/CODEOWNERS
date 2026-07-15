@@ -1,0 +1,8 @@
+# CODEOWNERS — preencher após a transferência do repositório para a organização
+# (ver docs/GOVERNANCE.md). Exemplos:
+#
+# *                     @pitang/<time-frontend>
+# /src/lib/api/         @pitang/<time-backend>
+# /docs/                @<usuario-do-designer>
+#
+# Enquanto o repo estiver em conta pessoal, o GitHub ignora entradas de org.
