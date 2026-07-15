@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 
 import { PageHeader, PageShell } from "@/components/page-header";
-import { StatCard } from "@/components/bits";
-import { initials } from "@/lib/utils";
+import { StatCard, TONE_TEXT_AA } from "@/components/bits";
+import { cn, initials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -178,9 +178,11 @@ export default function DashboardPage() {
                 className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent"
               >
                 <div
-                  className={`flex size-9 items-center justify-center rounded-md text-[13px] font-semibold ${
-                    toneMap[a.avatarTone]
-                  }`}
+                  className={cn(
+                    "flex size-9 items-center justify-center rounded-md text-[13px] font-semibold",
+                    toneMap[a.avatarTone],
+                    TONE_TEXT_AA[a.avatarTone],
+                  )}
                 >
                   {/* #128: iniciais canônicas (2 letras, maiúsculas) */}
                   {initials(a.name)}

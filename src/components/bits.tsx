@@ -10,6 +10,15 @@ import { statusDot, TONE } from "@/lib/constants";
    manter a API pública deste módulo intacta. */
 export { statusDot, TONE };
 
+/* Sobre fundo tintado (bg-tom/12) a variante -text fica um fio abaixo de
+   AA 4.5:1 no light; o passo 700 da escala garante o contraste. No dark a
+   -text já é calibrada para AA — mantida via dark:. */
+export const TONE_TEXT_AA: Record<string, string> = {
+  bluetron: "text-bluetron-700 dark:text-bluetron-text",
+  forest: "text-forest-700 dark:text-forest-text",
+  amethyst: "text-amethyst-700 dark:text-amethyst-text",
+};
+
 export function StatusBadge({
   status,
   className,
@@ -45,6 +54,7 @@ export function ToneAvatar({
       className={cn(
         "flex items-center justify-center rounded-md font-semibold",
         TONE[tone] ?? TONE.graphite,
+        TONE_TEXT_AA[tone],
         className,
       )}
     >

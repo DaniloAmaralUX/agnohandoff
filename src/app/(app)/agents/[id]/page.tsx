@@ -110,19 +110,19 @@ export default async function AgentBuilder({
         <BuilderFormSection>
         <Tabs defaultValue="instrucoes" className="gap-4">
           <TabsList variant="line" className="w-full justify-start gap-4 border-b border-border">
-            <TabsTrigger value="instrucoes">
+            <TabsTrigger className="text-foreground/70" value="instrucoes">
               <Sparkles /> Instruções
             </TabsTrigger>
-            <TabsTrigger value="modelo">
+            <TabsTrigger className="text-foreground/70" value="modelo">
               <SlidersHorizontal /> Modelo
             </TabsTrigger>
-            <TabsTrigger value="ferramentas">
+            <TabsTrigger className="text-foreground/70" value="ferramentas">
               <Wrench /> Ferramentas
             </TabsTrigger>
-            <TabsTrigger value="memoria">
+            <TabsTrigger className="text-foreground/70" value="memoria">
               <Brain /> Memória
             </TabsTrigger>
-            <TabsTrigger value="canais">
+            <TabsTrigger className="text-foreground/70" value="canais">
               <Radio /> Canais
             </TabsTrigger>
           </TabsList>

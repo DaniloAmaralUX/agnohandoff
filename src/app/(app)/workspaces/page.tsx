@@ -243,9 +243,9 @@ export default function WorkspacesPage() {
       <Tabs defaultValue="workspaces" className="mt-6">
         <TabsList>
           {/* "Visão geral" evita repetir o título da página (achado usability). */}
-          <TabsTrigger value="workspaces">Visão geral</TabsTrigger>
-          <TabsTrigger value="projetos">Projetos</TabsTrigger>
-          <TabsTrigger value="custos">Custos</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="workspaces">Visão geral</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="projetos">Projetos</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="custos">Custos</TabsTrigger>
         </TabsList>
 
         {/* ── Workspaces ─────────────────────────────────────────── */}

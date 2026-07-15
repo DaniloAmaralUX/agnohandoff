@@ -26,8 +26,8 @@ import {
 
 /* ── Cor da Badge por escopo da regra ────────────────────────────── */
 const scopeTint: Record<string, string> = {
-  Payload: "border-bluetron/25 bg-bluetron/10 text-bluetron-text",
-  Voz: "border-amethyst/25 bg-amethyst/10 text-amethyst-text",
+  Payload: "border-bluetron/25 bg-bluetron/10 text-bluetron-700 dark:text-bluetron-text",
+  Voz: "border-amethyst/25 bg-amethyst/10 text-amethyst-700 dark:text-amethyst-text",
   Entrada: "border-forest/25 bg-forest/10 text-forest-text",
   Saída: "border-honey/25 bg-honey/10 text-honey-text",
 };
@@ -188,7 +188,7 @@ export default function StudioPage() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <MonoLabel>preview</MonoLabel>
-                  <span className="font-mono text-[10px] text-muted-foreground/70">
+                  <span className="font-mono text-[10px] text-foreground/70">
                     rule.yaml
                   </span>
                 </div>
@@ -203,7 +203,7 @@ export default function StudioPage() {
                     <span className="text-foreground">payload</span>
                     {"\n"}
                     <span className="text-amethyst-text">trigger</span>:{" "}
-                    <span className="text-muted-foreground/70">
+                    <span className="text-foreground/70">
                       &quot;on: patient.message&quot;
                     </span>
                     {"\n"}

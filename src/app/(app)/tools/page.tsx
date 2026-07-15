@@ -151,8 +151,8 @@ export default function ToolsPage() {
 
       <Tabs defaultValue="ferramentas" className="mt-6">
         <TabsList>
-          <TabsTrigger value="ferramentas">Ferramentas</TabsTrigger>
-          <TabsTrigger value="kb">Base de conhecimento</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="ferramentas">Ferramentas</TabsTrigger>
+          <TabsTrigger className="text-foreground/70" value="kb">Base de conhecimento</TabsTrigger>
         </TabsList>
 
         {/* ── ABA: Ferramentas ─────────────────────────────────────── */}

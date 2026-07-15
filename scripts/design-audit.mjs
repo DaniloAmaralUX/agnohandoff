@@ -73,8 +73,9 @@ const slowUI = scan("duration-(3[5-9]\\d|[4-9]\\d{2}|[1-9]\\d{3,})", (f) => /\.t
 const scaleZero = scan("(zoom-in-0|scale-0)[\\s\"']", (f) => /\.tsx$/.test(f));
 
 /* 5. Cor semântica usada (dot/tint/texto) — a triar no sweep -text */
-// semântico VIVO usado como texto (deveria ser -text). crimson já é AA (sem -text) → fora.
-const semColor = scan("text-(forest|honey|amethyst|bluetron)\\b(?!-text)", (f) => /\.tsx$/.test(f));
+// semântico VIVO usado como texto (deveria ser -text ou passo de escala -N00).
+// crimson já é AA (sem -text) → fora. Aceita -text e -50..-900 como AA.
+const semColor = scan("text-(forest|honey|amethyst|bluetron)\\b(?!-text|-\\d)", (f) => /\.tsx$/.test(f));
 
 /* 6. Anti-regressão (craft 2026-07-15) */
 // Larguras fixas grandes em classe arbitrária — risco de overflow em 390px

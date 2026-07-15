@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   playgroundThread,
   type Conversation,
@@ -208,10 +208,15 @@ export default function ConversationsPage() {
               onValueChange={(v) => changeFiltro(v as Filtro)}
             >
               <TabsList className="w-full">
-                <TabsTrigger value="todas">Todas</TabsTrigger>
-                <TabsTrigger value="ativas">Ativas</TabsTrigger>
-                <TabsTrigger value="resolvidas">Resolvidas</TabsTrigger>
+                <TabsTrigger className="text-foreground/70" value="todas">Todas</TabsTrigger>
+                <TabsTrigger className="text-foreground/70" value="ativas">Ativas</TabsTrigger>
+                <TabsTrigger className="text-foreground/70" value="resolvidas">Resolvidas</TabsTrigger>
               </TabsList>
+              {/* As abas filtram a lista abaixo (fora do Tabs); painéis vazios
+                  mantêm o aria-controls dos triggers apontando para nós reais. */}
+              <TabsContent value="todas" tabIndex={-1} />
+              <TabsContent value="ativas" tabIndex={-1} />
+              <TabsContent value="resolvidas" tabIndex={-1} />
             </Tabs>
           </div>
 
@@ -428,7 +433,12 @@ export default function ConversationsPage() {
           </div>
 
           {/* Corpo — bolhas */}
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+          <div
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4"
+            role="region"
+            aria-label="Mensagens da conversa"
+            tabIndex={0}
+          >
             <div className="flex justify-center">
               <span className="rounded-full bg-muted px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
                 Hoje
