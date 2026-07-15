@@ -150,3 +150,33 @@ Tema claro por padrão; `.dark` definido no mesmo arquivo (toggle no topbar).
 - **Shell:** `app-sidebar.tsx` (nav agrupada + switcher + logout), `topbar.tsx`.
 - **Primitivos:** `src/components/ui/*` (shadcn radix-nova). Cores vêm do `globals.css`.
 - **Telas:** todas as ~18 rotas existem (`src/app/(app)/*` + landing/login/handoff/fluxos/onboarding/super-admin). Catálogo vivo em **`/design`** (`/handoff` redireciona pra lá). As rotas **fora** do grupo `(app)` (landing, `/login`, `/onboarding`, `/super-admin`) **não** têm AuthGuard nem sidebar.
+
+---
+
+## 8. Fundação shadcn — o que é padrão e o que é do produto {#shadcn}
+
+Tudo em `src/components/ui/*` é **shadcn/ui, style `radix-nova`**, comparado contra o upstream oficial `shadcn-ui/ui@bc07053`. O tema (tokens OKLCH) vive em `globals.css`, **fora** dos componentes — por isso dá para atualizar primitivos sem tocar na identidade visual.
+
+**Como atualizar/adicionar componentes neste ambiente** (o registry `ui.shadcn.com` fica atrás de rede fechada — aponte a CLI para o registry oficial hospedado no GitHub):
+```bash
+export REGISTRY_URL=https://raw.githubusercontent.com/shadcn-ui/ui/bc0705384b51252af26dcc65425b216bf5eb063c/apps/v4/public/r
+pnpm dlx shadcn@latest add <componente> --diff   # prévia (smart-merge)
+pnpm dlx shadcn@latest add <componente>          # aplica
+```
+Skill oficial `shadcn` instalada em `.claude/skills/shadcn/` (regras de styling/forms/composição para o agente).
+
+**Preset do design system** (recria um app-satélite com o mesmo DS num comando): código **`b2fA`** (`style nova · baseColor neutral · lucide · geist`), gerado por `shadcn preset resolve`.
+
+**Auditoria de drift (2026-07-15) — o que é padrão vs. customizado:**
+
+| Não tocar (customização do produto — carrega tokens/motion/pt-BR) | Padrão / drift só cosmético (sincronizável sem risco) |
+|---|---|
+| `button`, `card`, `dialog`, `sheet`, `tooltip`, `slider` — sombras (`--shadow-modal/overlay`, `shadow-border`), easings próprios, hit-targets, "Fechar" | `avatar`, `input`, `label`, `table`, `textarea`, `skeleton`, `separator`, `scroll-area`, `breadcrumb`, `field`, `sonner` — idênticos ao upstream |
+| `sidebar` (`SidebarInset` como `<div>` + foco no fechar) e `progress` (`value` no Root) — correções de a11y intencionais deste projeto | `switch`, `tabs`, `badge` — upstream migrou para shorthand `data-*`/`transition-all`; funcionalmente idêntico, adiar até um bump de `radix-ui` |
+| — | `dropdown-menu`, `select` — upstream adicionou menus translúcidos (`cn-menu-*`): **mudança visual deliberada**, não adotar às cegas |
+
+> Componentes próprios (não-shadcn), com o porquê: `bits.tsx` (StatusBadge/ToneAvatar/MonoLabel — vocabulário de status do produto), `page-header.tsx` (PageShell/PageHeader — chrome de página), `form-sheet.tsx` (o padrão de ação §2), `memory-hub.tsx`, `command-menu.tsx`, `data-table/*` (portado de `satnaing/shadcn-admin`, MIT).
+
+**Registry próprio (opção futura da empresa):** publicar o design system como registry consumível por `shadcn add` = adicionar um `registry.json` na raiz (`registry:base`) — repo GitHub público serve direto (`owner/repo/item`), sem servidor. Ver `docs/solutions/` se for adiante.
+
+**Migração Radix → Base UI:** o upstream tornou Base UI o default (jul/2026), mas Radix **não** está deprecado ("you do not need to migrate") — decisão futura do dev, com skill oficial de migração disponível.
