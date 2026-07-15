@@ -13,6 +13,9 @@ function Progress({
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
+      // value repassado ao Root: sem ele o Radix não emite aria-valuenow e a
+      // barra perde o valor para leitores de tela.
+      value={value}
       className={cn(
         "relative flex h-1 w-full items-center overflow-x-hidden rounded-full bg-muted",
         className
