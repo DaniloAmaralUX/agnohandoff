@@ -197,8 +197,9 @@ export default function FluxosPage() {
             <span>· Roteiro de fluxos de teste · protótipo de design</span>
           </div>
           <p className="mt-2 max-w-2xl">
-            O protótipo é uma maquete navegável: mostra <strong className="font-medium text-foreground">onde</strong> se
-            faz cada coisa. Quem <strong className="font-medium text-foreground">executa</strong> é o produto (Streamlit).
+            Em <strong className="font-medium text-foreground">modo demo</strong>, as telas usam dados de exemplo e as
+            ações não persistem. Em <strong className="font-medium text-foreground">modo API</strong>, parte das telas
+            executa contra o backend real — o estado exato de cada uma está no <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">STATUS.md</code> do repositório.
           </p>
         </footer>
       </div>
